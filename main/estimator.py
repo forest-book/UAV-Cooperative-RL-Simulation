@@ -84,7 +84,7 @@ class Estimator:
         if indirect_estimates:
             for x_hat_ij_r_k in indirect_estimates:
                 indirect_correction_sum_term += kappa_I * (x_hat_ij_r_k - pi_ij_i_k)
-        print(f"かんせによる補正項: {indirect_correction_sum_term}")
+        print(f"間接推定による補正項: {indirect_correction_sum_term}")
         # 全ての項を結合して次の融合推定値を算出
         pi_ij_i_k_plus_1 = current_fused_RL_term + prediction_term + direct_correction_term + indirect_correction_sum_term
         print(f"次の融合推定値: {pi_ij_i_k_plus_1}")
@@ -106,14 +106,14 @@ gamma_gain = 0.5  # ゲイン
 est = Estimator()
 # --- 関数を呼び出して計算 ---
 # 直接推定推定式のデバッグ用
-# next_estimate = est.calc_direct_RL_estimate(
-#     chi_hat_ij_i_k=current_estimate,
-#     noisy_v=relative_velocity,
-#     noisy_d=distance,
-#     noisy_d_dot=distance_rate,
-#     T=T_sampling,
-#     gamma=gamma_gain
-# )
+next_estimate = est.calc_direct_RL_estimate(
+    chi_hat_ij_i_k=current_estimate,
+    noisy_v=relative_velocity,
+    noisy_d=distance,
+    noisy_d_dot=distance_rate,
+    T=T_sampling,
+    gamma=gamma_gain
+)
 
 # --- 結果の表示 ---
 print(f"現在の推定値 (x̂_k): {current_estimate}")
