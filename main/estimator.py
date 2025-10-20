@@ -15,7 +15,7 @@ class Estimator:
         """
         論文の式(1)に基づき、直接相対自己位置推定（Direct RL Estimation）を計算
         Args:
-            current_estimate_x (np.ndarray): 現在の相対位置の推定値ベクトル (x̂_k)
+            chi_hat_ij_i_k (np.ndarray): 現在の相対位置の推定値ベクトル (x̂_k)
             noisy_v (np.ndarray): ノイズを含む相対速度ベクトル (v_k + ε_k)
             noisy_d (float): ノイズを含む距離スカラー (d_k + ε_d)
             noisy_d_dot (float): ノイズを含む距離変化率スカラー (ḋ_k + ε_ḋ)
