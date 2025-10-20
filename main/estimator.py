@@ -22,7 +22,7 @@ class Estimator:
             T (float): サンプリング周期
             gamma (float): ゲインパラメータ (γ)
         Returns:
-            np.ndarray: 次の時刻の相対位置の推定値ベクトル (x̂_{k+1})
+            np.ndarray: 次の時刻の相対自己位置の直接推定値 (x̂_{k+1})
         """
         # 式(1)を構成要素に分解
         # 第1項：現在の推定値
