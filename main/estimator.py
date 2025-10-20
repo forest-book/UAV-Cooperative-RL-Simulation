@@ -1,4 +1,5 @@
 import numpy as np
+from typing import List, Dict
 
 class Estimator:
     """
@@ -44,13 +45,50 @@ class Estimator:
         return chi_hat_ij_i_k_plus_1
     
     def calc_fused_RL_estimate(self,
-                               
-    ):
+                               pi_ij_i_k: np.ndarray,
+                               direct_estimate_x_hat: np.ndarray,
+                               indirect_estimates: List[np.ndarray],
+                               noisy_v: np.ndarray,
+                               T: float,
+                               kappa_D: float,
+                               kappa_I: float
+    ) -> np.ndarray:
         """
         論文の式(5)に基づき，融合相対自己位置推定（fused RL estimation）を計算
         Args:
-
+            pi_ij_i_k (np.ndarray): 現在の融合推定値 (π_k)
+            direct_estimate_x_hat (np.ndarray): 自機で計算した直接推定式 (x̂_k)
+            indirect_estimates (List[np.ndarray]): 隣接機から得られる間接推定値のリスト [x̂_{r,k}]
+            noisy_v (np.ndarray): ノイズを含む相対速度ベクトル (v_k + ε_k)
+            T (float): サンプリング周期
+            kappa_D (float): 直接推定の重み (κ^D)
+            kappa_I (float): 間接推定の重み (κ^I)
+        Returns:
+            np.ndarray: 次の時刻の相対自己位置の融合推定値 (π_{k+1})
         """
+        # 式(5)を構成要素に分解
+        # 第1項：現在の推定値
+        current_fused_RL_term = pi_ij_i_k
+        print(f"現在の推定値: {current_fused_RL_term}")
+        # 第2項：速度に基づく予測項
+        prediction_term = T * noisy_v
+        print(f"予測項: {prediction_term}")
+        # 第3項：直接推定による補正
+        # κ^D * [x̂_k - π_k]
+        direct_correction_term = kappa_D * (direct_estimate_x_hat - pi_ij_i_k)
+        print(f"直接推定による補正: {direct_correction_term}")
+        # 第4項: 間接推定による補正 (総和)
+        # Σ κ^I * [x̂_{r,k} - π_k]
+        indirect_correction_sum_term = np.zeros(2) # 2次元ベクトルとして初期化
+        print(f"間接推定による補正項の初期値: {indirect_correction_sum_term}")
+        if indirect_estimates:
+            for x_hat_ij_r_k in indirect_estimates:
+                indirect_correction_sum_term += kappa_I * (x_hat_ij_r_k - pi_ij_i_k)
+        print(f"かんせによる補正項: {indirect_correction_sum_term}")
+        # 全ての項を結合して次の融合推定値を算出
+        pi_ij_i_k_plus_1 = current_fused_RL_term + prediction_term + direct_correction_term + indirect_correction_sum_term
+        print(f"次の融合推定値: {pi_ij_i_k_plus_1}")
+        return pi_ij_i_k_plus_1
 
 
 # --- サンプルデータ定義 ---
