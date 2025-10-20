@@ -40,7 +40,7 @@ class Estimator:
         print(f"補正項{correction_term}")
         # 全ての項を結合して次の推定値を算出
         chi_hat_ij_i_k_plus_1 = current_RL_term + predicton_term + correction_term
-        print(f"次の推定値{chi_hat_ij_i_k_plus_1}")
+        print(f"次の直接推定値{chi_hat_ij_i_k_plus_1}")
         return chi_hat_ij_i_k_plus_1
     
     def calc_fused_RL_estimate(self,
