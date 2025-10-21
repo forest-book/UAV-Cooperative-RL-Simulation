@@ -4,6 +4,7 @@ from collections import defaultdict
 from typing import List, Dict, Tuple
 from quadcopter import UAV
 from estimator import Estimator
+from data_handler import Plotter
 import csv
 
 # ---------------------------------------------------------------------------- #
@@ -345,40 +346,6 @@ class Environment:
                 row = [t] + list(errors)
                 writer.writerow(row)
 
-    def plot_errors_from_csv(self, filename):
-        """
-        Plot fusion estimation errors from a CSV file.
-
-        Parameters:
-            filename (str): Name of the CSV file to read.
-        """
-        import pandas as pd
-
-        # Read CSV file
-        data = pd.read_csv(filename)
-
-        fig, ax = plt.subplots(figsize=(12, 6))
-        colors = {2: 'c', 3: 'b', 4: 'g', 5: 'r', 6: 'm'}
-
-        for i in range(2, 7):
-            errors = data[f'uav{i}_fused_error']
-            valid_times = data['time'][~errors.isna()]
-            valid_errors = errors[~errors.isna()]
-
-            if not valid_errors.empty:
-                ax.plot(valid_times, valid_errors, 
-                        label=f'$||\pi_{{{i}1}} - \chi_{{{i}1}}||$', 
-                        color=colors.get(i, 'k'))
-
-        ax.set_title('Consensus-based RL Fusion Estimation', fontsize=16, fontweight='bold')
-        ax.set_xlabel('$k$ (sec)', fontsize=14)
-        ax.set_ylabel('$||\pi_{ij}(k) - \chi_{ij}(k)||$ (m)', fontsize=14)
-        ax.set_ylim(0, 1.0)
-        ax.legend()
-        ax.grid(True)
-
-        plt.show()
-
 # ---------------------------------------------------------------------------- #
 # 4. メイン実行ブロック (仕様書 4節)
 # ---------------------------------------------------------------------------- #
@@ -425,4 +392,5 @@ if __name__ == '__main__':
 
     # Plot results from CSV
     env.plot_results_from_csv('simulation_history.csv')
-    env.plot_errors_from_csv('fusion_errors.csv')
+    #env.plot_errors_from_csv('fusion_errors.csv')
+    Plotter.plot_errors_from_csv('fusion_errors.csv')
