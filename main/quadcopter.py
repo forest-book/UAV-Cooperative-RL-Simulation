@@ -13,7 +13,7 @@ class UAV:
     """
     def __init__(self, uav_id: int, initial_position: np.ndarray):
         self.id = uav_id
-        self.position = np.array(initial_position, dtype=float)
+        self.true_position = np.array(initial_position, dtype=float)
         self.velocity = np.zeros(2, dtype=float)
 
         # 推定値を保持する辞書 {target_id: estimate_vector}
