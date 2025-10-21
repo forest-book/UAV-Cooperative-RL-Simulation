@@ -327,6 +327,58 @@ class Environment:
         plt.axis('equal')
         plt.show()
 
+    def save_errors_to_csv(self, filename):
+        """
+        Save fusion estimation errors to a CSV file.
+
+        Parameters:
+            filename (str): Name of the CSV file to save.
+        """
+        with open(filename, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            # Write headers
+            headers = ['time'] + [f'uav{i}_fused_error' for i in range(2, 7)]
+            writer.writerow(headers)
+
+            # Write data
+            for t, errors in zip(self.history['time'], zip(*[self.history[f'uav{i}_fused_error'] for i in range(2, 7)])):
+                row = [t] + list(errors)
+                writer.writerow(row)
+
+    def plot_errors_from_csv(self, filename):
+        """
+        Plot fusion estimation errors from a CSV file.
+
+        Parameters:
+            filename (str): Name of the CSV file to read.
+        """
+        import pandas as pd
+
+        # Read CSV file
+        data = pd.read_csv(filename)
+
+        fig, ax = plt.subplots(figsize=(12, 6))
+        colors = {2: 'c', 3: 'b', 4: 'g', 5: 'r', 6: 'm'}
+
+        for i in range(2, 7):
+            errors = data[f'uav{i}_fused_error']
+            valid_times = data['time'][~errors.isna()]
+            valid_errors = errors[~errors.isna()]
+
+            if not valid_errors.empty:
+                ax.plot(valid_times, valid_errors, 
+                        label=f'$||\pi_{{{i}1}} - \chi_{{{i}1}}||$', 
+                        color=colors.get(i, 'k'))
+
+        ax.set_title('Consensus-based RL Fusion Estimation', fontsize=16, fontweight='bold')
+        ax.set_xlabel('$k$ (sec)', fontsize=14)
+        ax.set_ylabel('$||\pi_{ij}(k) - \chi_{ij}(k)||$ (m)', fontsize=14)
+        ax.set_ylim(0, 1.0)
+        ax.legend()
+        ax.grid(True)
+
+        plt.show()
+
 # ---------------------------------------------------------------------------- #
 # 4. メイン実行ブロック (仕様書 4節)
 # ---------------------------------------------------------------------------- #
@@ -369,4 +421,8 @@ if __name__ == '__main__':
     
     # Save history to CSV after simulation
     env.save_history_to_csv('simulation_history.csv')
+    env.save_errors_to_csv('fusion_errors.csv')
+
+    # Plot results from CSV
     env.plot_results_from_csv('simulation_history.csv')
+    env.plot_errors_from_csv('fusion_errors.csv')
