@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List, Dict
+from typing import List
 
 class Estimator:
     """
@@ -28,20 +28,20 @@ class Estimator:
         # 式(1)を構成要素に分解
         # 第1項：現在の推定値
         current_RL_term = chi_hat_ij_i_k
-        print(f"現在の推定値：{current_estimate}")
+        #print(f"現在の推定値：{current_estimate}")
         # 第2項：速度に基づく予測項
         predicton_term = T * noisy_v
-        print(f"予測項：{predicton_term}")
+        #print(f"予測項：{predicton_term}")
         # 第3項：観測誤差に基づく補正項
         # 角括弧[]内のスカラー誤差を計算
         scalar_error = (noisy_d * noisy_d_dot) - (noisy_v.T @ chi_hat_ij_i_k)
-        print(f"スカラー誤差{scalar_error}")
+        #print(f"スカラー誤差{scalar_error}")
         # スカラー誤差を用いてベクトル補正項を計算
         correction_term = gamma * T * noisy_v * scalar_error
-        print(f"補正項{correction_term}")
+        #print(f"補正項{correction_term}")
         # 全ての項を結合して次の推定値を算出
         chi_hat_ij_i_k_plus_1 = current_RL_term + predicton_term + correction_term
-        print(f"次の直接推定値{chi_hat_ij_i_k_plus_1}")
+        #print(f"次の直接推定値{chi_hat_ij_i_k_plus_1}")
         return chi_hat_ij_i_k_plus_1
     
     def calc_fused_RL_estimate(self,
@@ -69,25 +69,25 @@ class Estimator:
         # 式(5)を構成要素に分解
         # 第1項：現在の推定値
         current_fused_RL_term = pi_ij_i_k
-        print(f"現在の推定値: {current_fused_RL_term}")
+        #print(f"現在の推定値: {current_fused_RL_term}")
         # 第2項：速度に基づく予測項
         prediction_term = T * noisy_v
-        print(f"予測項: {prediction_term}")
+        #print(f"予測項: {prediction_term}")
         # 第3項：直接推定による補正
         # κ^D * [x̂_k - π_k]
         direct_correction_term = kappa_D * (direct_estimate_x_hat - pi_ij_i_k)
-        print(f"直接推定による補正: {direct_correction_term}")
+        #print(f"直接推定による補正: {direct_correction_term}")
         # 第4項: 間接推定による補正 (総和)
         # Σ κ^I * [x̂_{r,k} - π_k]
         indirect_correction_sum_term = np.zeros(2) # 2次元ベクトルとして初期化
-        print(f"間接推定による補正項の初期値: {indirect_correction_sum_term}")
+        #print(f"間接推定による補正項の初期値: {indirect_correction_sum_term}")
         if indirect_estimates:
             for x_hat_ij_r_k in indirect_estimates:
                 indirect_correction_sum_term += kappa_I * (x_hat_ij_r_k - pi_ij_i_k)
-        print(f"間接推定による補正項: {indirect_correction_sum_term}")
+        #print(f"間接推定による補正項: {indirect_correction_sum_term}")
         # 全ての項を結合して次の融合推定値を算出
         pi_ij_i_k_plus_1 = current_fused_RL_term + prediction_term + direct_correction_term + indirect_correction_sum_term
-        print(f"次の融合推定値: {pi_ij_i_k_plus_1}")
+        #print(f"次の融合推定値: {pi_ij_i_k_plus_1}")
         return pi_ij_i_k_plus_1
 
 
