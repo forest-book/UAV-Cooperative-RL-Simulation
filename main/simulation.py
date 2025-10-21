@@ -4,6 +4,7 @@ from collections import defaultdict
 from typing import List, Dict, Tuple
 from quadcopter import UAV
 from estimator import Estimator
+import csv
 
 # ---------------------------------------------------------------------------- #
 # 3. Environment クラスの実装 (仕様書 3.3節)
@@ -280,6 +281,52 @@ class Environment:
                 print(f" {i}1  | {'N/A':<18} | {'N/A':<15}")
         print("="*50)
 
+    def save_history_to_csv(self, filename):
+        """
+        Save simulation history to a CSV file.
+
+        Parameters:
+            filename (str): Name of the CSV file to save.
+        """
+        with open(filename, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            # Write headers
+            headers = ['time'] + [f'uav{i}_true_pos_x' for i in range(1, 7)] + [f'uav{i}_true_pos_y' for i in range(1, 7)]
+            writer.writerow(headers)
+
+            # Write data
+            for t, positions in zip(self.history['time'], zip(*[self.history[f'uav{i}_true_pos'] for i in range(1, 7)])):
+                row = [t] + [pos[0] for pos in positions] + [pos[1] for pos in positions]
+                writer.writerow(row)
+
+    def plot_results_from_csv(self, filename):
+        """
+        Plot UAV trajectories from a CSV file.
+
+        Parameters:
+            filename (str): Name of the CSV file to read.
+        """
+        import pandas as pd
+
+        # Read CSV file
+        data = pd.read_csv(filename)
+
+        plt.figure(figsize=(10, 8))
+        for i in range(1, 7):
+            x_positions = data[f'uav{i}_true_pos_x']
+            y_positions = data[f'uav{i}_true_pos_y']
+            plt.plot(x_positions, y_positions, label=f'UAV {i}')
+            plt.scatter(x_positions.iloc[0], y_positions.iloc[0], marker='o', label=f'UAV {i} Start')
+            plt.scatter(x_positions.iloc[-1], y_positions.iloc[-1], marker='x', label=f'UAV {i} End')
+
+        plt.title('UAV Trajectories from CSV')
+        plt.xlabel('X position (m)')
+        plt.ylabel('Y position (m)')
+        plt.legend()
+        plt.grid(True)
+        plt.axis('equal')
+        plt.show()
+
 # ---------------------------------------------------------------------------- #
 # 4. メイン実行ブロック (仕様書 4節)
 # ---------------------------------------------------------------------------- #
@@ -319,3 +366,7 @@ if __name__ == '__main__':
     # 5節: 出力と評価
     env.plot_results()
     env.print_statistics()
+    
+    # Save history to CSV after simulation
+    env.save_history_to_csv('simulation_history.csv')
+    env.plot_results_from_csv('simulation_history.csv')
