@@ -267,7 +267,6 @@ if __name__ == '__main__':
     env.run_simulation(duration=300)
     
     # 5節: 出力と評価
-    env.plot_results()
     env.print_statistics()
     print("グラフを生成中...")
     # Save history to CSV after simulation
