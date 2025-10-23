@@ -150,5 +150,9 @@ class Plotter:
         axins.grid(True)
         ax.indicate_inset_zoom(axins, edgecolor="black") # ズーム箇所を四角で表示
 
+        #todo グラフズーム範囲の修正
+        plt.savefig(f'../data/graph/RL_errors/fused_RL_errors_graph_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.png')
+        print(f"Graph successfully saved to fused_RL_errors_graph_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.png")
+        
         plt.show()
 
