@@ -47,7 +47,7 @@ class DataLogger:
                 writer.writerow(row)
         print(f"Data successfully saved to {filename}")
 
-    def save_fused_RL_errors_to_csv(self, filename: str = f'uav_trajectories_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
+    def save_fused_RL_errors_to_csv(self, filename: str = f'fused_RL_error_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
         """
         相対自己位置の融合推定誤差をcsv保存する関数
 
