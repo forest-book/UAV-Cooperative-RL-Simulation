@@ -1,8 +1,9 @@
 import csv
 import pandas as pd
 import matplotlib.pyplot as plt
+from collections import defaultdict
 import numpy as np
-from typing import List
+from typing import List, Dict
 import datetime
 
 # データ保存時の日時
@@ -12,6 +13,36 @@ class DataLogger:
     """
     シミュレーション中のデータを収集し、CSVファイルに保存するクラス。
     """
+    def __init__(self):
+        self.data: List = []
+        self.timestamp: List[float] = []
+        self.uav_trajectories: Dict[str, List[np.ndarray]] = defaultdict(list)
+
+    def logging_timestamp(self, time: float):
+        self.timestamp.append(time)
+
+    def logging_uav_trajectories(self, uav_id: int, uav_position: np.ndarray):
+        self.uav_trajectories[f"uav{uav_id}_true_pos"].append(uav_position.copy())
+
+    def save_trajectories_data_to_csv(self, filename: str = f'uav_trajectories_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
+        """
+        複数のUAVの軌道(2D)をcsv保存する関数
+
+        Args:
+            filename (str): 保存するCSVファイル名
+        """
+        dir_path = "../data/csv//trajectories/" + filename
+        with open(dir_path, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            # Write headers
+            headers = ['time'] + [f'uav{i}_true_pos_x' for i in range(1, 7)] + [f'uav{i}_true_pos_y' for i in range(1, 7)]
+            writer.writerow(headers)
+
+            # Write data
+            for t, positions in zip(self.timestamp, zip(*[self.uav_trajectories[f'uav{i}_true_pos'] for i in range(1, 7)])):
+                row = [t] + [pos[0] for pos in positions] + [pos[1] for pos in positions]
+                writer.writerow(row)
+
 
 
 class Plotter:
