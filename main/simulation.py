@@ -281,25 +281,6 @@ class Environment:
                 print(f" {i}1  | {'N/A':<18} | {'N/A':<15}")
         print("="*50)
 
-    def save_history_to_csv(self, filename):
-        """
-        Save simulation history to a CSV file.
-
-        Parameters:
-            filename (str): Name of the CSV file to save.
-        """
-        with open(filename, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            # Write headers
-            headers = ['time'] + [f'uav{i}_true_pos_x' for i in range(1, 7)] + [f'uav{i}_true_pos_y' for i in range(1, 7)]
-            writer.writerow(headers)
-
-            # Write data
-            for t, positions in zip(self.history['time'], zip(*[self.history[f'uav{i}_true_pos'] for i in range(1, 7)])):
-                row = [t] + [pos[0] for pos in positions] + [pos[1] for pos in positions]
-                writer.writerow(row)
-
-
     def save_errors_to_csv(self, filename):
         """
         Save fusion estimation errors to a CSV file.
@@ -362,7 +343,6 @@ if __name__ == '__main__':
     env.print_statistics()
     
     # Save history to CSV after simulation
-    env.save_history_to_csv('simulation_history.csv')
     env.data_logger.save_trajectories_data_to_csv()
     env.save_errors_to_csv('fusion_errors.csv')
 
