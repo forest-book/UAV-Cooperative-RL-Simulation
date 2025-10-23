@@ -76,20 +76,6 @@ class Environment:
 
         return true_v_ij + vel_noise, true_d_ij + dist_noise, true_d_dot_ij + dist_rate_noise
 
-    def _calculate_kappas(self, uav_i: UAV, target_j_id: int) -> Tuple[float, float]:
-        """
-        論文記載の式に基づき重みkappaを計算 [cite: 11]
-        """
-        cardinality_Ni = uav_i.cardinality_Ni # |Ni| [cite: 12]
-        alpha_ij = 1 if target_j_id in uav_i.neighbors else 0 # αij [cite: 12]
-        
-        denominator = cardinality_Ni + 1 + alpha_ij
-        
-        kappa_D = alpha_ij / denominator # κ^D [cite: 11]
-        kappa_I = 1.0 / denominator # κ^I [cite: 11]
-        
-        return kappa_D, kappa_I
-
     def run_step(self):
         """シミュレーションを1ステップ進める [cite: 2]"""
         
@@ -128,8 +114,8 @@ class Environment:
             for target_j_id in uav_i.neighbors:
                 target_j_uav = self.uavs[target_j_id - 1]
                 
-                # 重みκを計算
-                kappa_D, kappa_I = self._calculate_kappas(uav_i, target_j_id)
+            # 重みκを計算 (iからj=1への重み)
+            kappa_D, kappa_I = self.estimator.calc_estimation_kappa(uav_i.neighbors, target_j_id)
                 
                 # ノイズ付き相対速度 v_ij を取得
                 noisy_v_ij, _, _ = self.get_noisy_measurements(uav_i, target_j_uav)

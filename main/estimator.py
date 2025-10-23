@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List
+from typing import List, Tuple
 
 class Estimator:
     """
@@ -89,6 +89,28 @@ class Estimator:
         pi_ij_i_k_plus_1 = current_fused_RL_term + prediction_term + direct_correction_term + indirect_correction_sum_term
         #print(f"次の融合推定値: {pi_ij_i_k_plus_1}")
         return pi_ij_i_k_plus_1
+    
+    def calc_estimation_kappa(self, uav_neigbors: List[int], target_uav_id: int) -> Tuple[float, float]:
+        """
+        論文記載の式に基づき重みkappaを計算
+        Args:
+            uav_neigbors(List[int]): uav_i(自機)の隣接機UAV idグループ
+            target_uav_id(int): 推定対象のUAV id
+        Returns:
+            Tuple [float, float]: [直接推定の重み, 融合推定の重み]
+        """
+        cardinality_Ni = len(uav_neigbors) # |Ni|
+        #print(f"Ni: {cardinality_Ni}")
+        alpha_ij = 1 if target_uav_id in uav_neigbors else 0 # αij
+        #print(f"alpha_ij: {alpha_ij}")
+        denominator = cardinality_Ni + 1 + alpha_ij # 重み項の分母
+
+        kappa_D = alpha_ij / denominator # κ^D
+        kappa_I = 1.0 / denominator # κ^I
+        #print(f"kappa_D: {kappa_D}")
+        #print(f"kappa_I: {kappa_I}")
+        return kappa_D, kappa_I
+
 
 
 # --- サンプルデータ定義 ---
