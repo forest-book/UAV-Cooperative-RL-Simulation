@@ -48,29 +48,40 @@ class DataLogger:
 
 class Plotter:
     @staticmethod
-    def plot_trajectories():
+    def plot_trajectories_from_csv(filename: str = f'uav_trajectories_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
         """
         複数のUAVの軌跡を2Dプロットする関数
 
         Args:
-            uav_positions (List[np.ndarray]): 各UAVの位置データのリスト。各要素は(N, 2)の形状を持つnumpy配列。
-            labels (List[str]): 各UAVのラベルのリスト。
-            title (str): プロットのタイトル。
+            filename (str): 読み込むCSVファイル名
         """
-        # --- 図4(a), (d)相当: 全UAVの軌跡 ---
-        plt.figure(figsize=(10, 8))
-        for i in range(1, 7):
-            positions = np.array(history[f'uav{i}_true_pos'])
-            plt.plot(positions[:, 0], positions[:, 1], label=f'UAV {i}')
-            plt.scatter(positions[0, 0], positions[0, 1], marker='o', label=f'UAV {i} Start')
-            plt.scatter(positions[-1, 0], positions[-1, 1], marker='x', label=f'UAV {i} End')
-        plt.title('UAV Trajectories (Scenario: ' + self.params.get('event', 'Continuous') + ')')
-        plt.xlabel('X position (m)')
-        plt.ylabel('Y position (m)')
-        plt.legend()
-        plt.grid(True)
-        plt.axis('equal')
-        plt.show()
+        try:
+            # Read CSV file
+            file_path = f"../data/csv/trajectories/{filename}"
+            data = pd.read_csv(file_path)
+
+            plt.figure(figsize=(10, 8))
+            for i in range(1, 7):
+                x_positions = data[f'uav{i}_true_pos_x']
+                y_positions = data[f'uav{i}_true_pos_y']
+                plt.plot(x_positions, y_positions, label=f'UAV {i}')
+                plt.scatter(x_positions.iloc[0], y_positions.iloc[0], marker='o', label=f'UAV {i} Start')
+                plt.scatter(x_positions.iloc[-1], y_positions.iloc[-1], marker='x', label=f'UAV {i} End')
+
+            plt.title('UAV Trajectories from CSV')
+            plt.xlabel('X position (m)')
+            plt.ylabel('Y position (m)')
+            plt.legend()
+            plt.grid(True)
+            plt.axis('equal')
+            plt.savefig(f'../data/graph/trajectories/uav_trajectories_graph_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.png')
+            print(f"Graph successfully saved to uav_trajectories_graph_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.png")
+            plt.show()
+
+        except FileNotFoundError:
+            print(f"Error: The file {filename} was not found.")
+        except Exception as e:
+            print(f"An error occurred while plotting: {e}")
 
     @staticmethod
     def plot_errors_from_csv(filename: str):
@@ -100,7 +111,7 @@ class Plotter:
         ax.set_title('Consensus-based RL Fusion Estimation', fontsize=16, fontweight='bold')
         ax.set_xlabel('$k$ (sec)', fontsize=14)
         ax.set_ylabel('$||\pi_{ij}(k) - \chi_{ij}(k)||$ (m)', fontsize=14)
-        ax.set_ylim(0, 100.0)
+        ax.set_ylim(0, 200.0)
         ax.legend()
         ax.grid(True)
 
