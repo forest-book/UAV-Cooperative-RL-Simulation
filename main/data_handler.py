@@ -105,7 +105,7 @@ class Plotter:
             print(f"An error occurred while plotting: {e}")
 
     @staticmethod
-    def plot_errors_from_csv(filename: str):
+    def plot_errors_from_csv(filename: str = f'fused_RL_error_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
         """
         Plot fusion estimation errors from a CSV file.
 
@@ -114,7 +114,8 @@ class Plotter:
         """
 
         # Read CSV file
-        data = pd.read_csv(filename)
+        file_path = f"../data/csv/RL_errors/{filename}"
+        data = pd.read_csv(file_path)
 
         fig, ax = plt.subplots(figsize=(12, 6))
         colors = {2: 'c', 3: 'b', 4: 'g', 5: 'r', 6: 'm'}
@@ -135,6 +136,19 @@ class Plotter:
         ax.set_ylim(0, 200.0)
         ax.legend()
         ax.grid(True)
+
+        # 図4(e)のズームインした図を挿入
+        axins = ax.inset_axes([0.5, 0.5, 0.4, 0.4])
+        for i in range(2, 7):
+             errors = data[f'uav{i}_fused_error']
+             valid_times = [t for t, e in zip(data['time'], errors) if e is not None]
+             valid_errors = [e for e in errors if e is not None]
+             if valid_errors:
+                axins.plot(valid_times, valid_errors, color=colors.get(i, 'k'))
+        axins.set_xlim(100, 150) # 論文のズーム範囲に合わせる
+        axins.set_ylim(0, 0.6)
+        axins.grid(True)
+        ax.indicate_inset_zoom(axins, edgecolor="black") # ズーム箇所を四角で表示
 
         plt.show()
 

@@ -5,7 +5,6 @@ from typing import List, Dict, Tuple
 from quadcopter import UAV
 from estimator import Estimator
 from data_handler import Plotter, DataLogger
-import csv
 
 # ---------------------------------------------------------------------------- #
 # 3. Environment クラスの実装 (仕様書 3.3節)
@@ -318,5 +317,5 @@ if __name__ == '__main__':
     env.save_RL_to_csv()
 
     # Plot results from CSV
-    Plotter.plot_errors_from_csv('fusion_errors.csv')
+    Plotter.plot_errors_from_csv()
     Plotter.plot_trajectories_from_csv()
