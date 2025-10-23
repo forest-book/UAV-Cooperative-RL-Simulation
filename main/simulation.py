@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from collections import defaultdict
 from typing import List, Dict, Tuple
 from quadcopter import UAV
@@ -202,47 +201,6 @@ class Environment:
                 print(f"進捗: {i * 100 // num_steps}%")
             self.run_step()
         print("シミュレーション完了。")
-
-    def plot_results(self):
-        """5節: 結果のグラフ描画"""
-        print("グラフを生成中...")
-        # --- 図4(b), (e)相当: 融合推定誤差 ---
-        fig, ax = plt.subplots(figsize=(12, 6))
-        
-        # 凡例が論文と一致するように調整
-        colors = {2: 'c', 3: 'b', 4: 'g', 5: 'r', 6: 'm'} # 論文の配色に合わせる
-        
-        for i in range(2, 7):
-            errors = self.history[f'uav{i}_fused_error']
-            valid_times = [t for t, e in zip(self.history['time'], errors) if e is not None]
-            valid_errors = [e for e in errors if e is not None]
-            
-            if valid_errors:
-                ax.plot(valid_times, valid_errors, 
-                        label=f'$||\pi_{{{i}1}} - \chi_{{{i}1}}||$', 
-                        color=colors.get(i, 'k'))
-        
-        ax.set_title('consensus-based RL fusion estimation', fontsize=16, fontweight='bold')
-        ax.set_xlabel('$k$ (sec)', fontsize=14)
-        ax.set_ylabel('$||\pi_{ij}(k) - \chi_{ij}(k)||$ (m)', fontsize=14)
-        ax.set_ylim(0, 1.0) # 誤差が有界であることを示すため、Y軸の上限を1.0に設定
-        ax.legend()
-        ax.grid(True)
-        
-        # 図4(e)のズームインした図を挿入
-        axins = ax.inset_axes([0.5, 0.5, 0.4, 0.4])
-        for i in range(2, 7):
-             errors = self.history[f'uav{i}_fused_error']
-             valid_times = [t for t, e in zip(self.history['time'], errors) if e is not None]
-             valid_errors = [e for e in errors if e is not None]
-             if valid_errors:
-                axins.plot(valid_times, valid_errors, color=colors.get(i, 'k'))
-        axins.set_xlim(100, 150) # 論文のズーム範囲に合わせる
-        axins.set_ylim(0, 0.6)
-        axins.grid(True)
-        ax.indicate_inset_zoom(axins, edgecolor="black") # ズーム箇所を四角で表示
-
-        plt.show()
 
     def print_statistics(self):
         """5節: 統計データ（表I相当）の出力 """
