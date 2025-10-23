@@ -186,9 +186,11 @@ class Environment:
                     fused_estimate = uav_i.fused_estimates[target_j_id]
                     error = np.linalg.norm(fused_estimate - true_relative_pos)
                     self.history[f'uav{uav_i.id}_fused_error'].append(error)
+                    self.data_logger.logging_fused_RL_error(uav_i.id, error)
                 else:
                     # 推定値がない場合 (UAV6など)
-                    self.history[f'uav{uav_i.id}_fused_error'].append(None) 
+                    self.history[f'uav{uav_i.id}_fused_error'].append(None)
+                    self.data_logger.logging_fused_RL_error(uav_i.id, None)
         
         self.time += self.dt
 
@@ -302,6 +304,9 @@ class Environment:
     def seve_trajectories(self):
         self.data_logger.save_trajectories_data_to_csv()
 
+    def save_RL_to_csv(self):
+        self.data_logger.save_fused_RL_errors_to_csv()
+
 # ---------------------------------------------------------------------------- #
 # 4. メイン実行ブロック (仕様書 4節)
 # ---------------------------------------------------------------------------- #
@@ -345,6 +350,7 @@ if __name__ == '__main__':
     # Save history to CSV after simulation
     env.data_logger.save_trajectories_data_to_csv()
     env.save_errors_to_csv('fusion_errors.csv')
+    env.save_RL_to_csv()
 
     # Plot results from CSV
     Plotter.plot_errors_from_csv('fusion_errors.csv')
