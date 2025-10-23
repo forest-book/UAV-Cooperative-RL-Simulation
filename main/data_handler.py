@@ -41,7 +41,7 @@ class Plotter:
         plt.show()
 
     @staticmethod
-    def plot_errors_from_csv(filename):
+    def plot_errors_from_csv(filename: str):
         """
         Plot fusion estimation errors from a CSV file.
 
