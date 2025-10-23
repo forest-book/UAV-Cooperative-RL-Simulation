@@ -107,61 +107,51 @@ class Environment:
                 )
                 next_direct_estimates[uav_i.id][neighbor_id] = next_direct
 
-        # 2-B. 融合推定 (式5) の計算 [cite: 5]
-        # 論文の目的（UAV1への集約）に基づき、全UAV (i=2..6) が UAV 1 (j=1) への推定を計算する
-        
-        target_j_id = self.params['TARGET_ID'] # ターゲットは UAV 1
-        target_j_uav = self.uavs[target_j_id - 1]
-
+        # ★★★ ここからが修正箇所 ★★★
+        # 2-B. 融合推定 (式5) の計算
+        # 全UAV (i) が、自身の *全ての隣接機* (j) への融合推定を計算する
         for uav_i in self.uavs:
-            if uav_i.id == target_j_id: continue # UAV 1 自身は計算しない
-
-            # 重みκを計算 (iからj=1への重み)
-            kappa_D, kappa_I = self.estimator.calc_estimation_kappa(uav_i.neighbors, target_j_id)
-            
-            # ノイズ付き相対速度 v_i1 を取得
-            noisy_v_ij, _, _ = self.get_noisy_measurements(uav_i, target_j_uav)
-            
-            # 間接推定値 x̂_{r,k}^{i1} のリストを作成
-            indirect_estimates_list = []
-            for r_id in uav_i.neighbors:
-                if r_id == target_j_id: continue # j=1 自身は除く
+            # uav_i は、自身の隣接機(target_j_id)全てへの融合推定を行う
+            for target_j_id in uav_i.neighbors:
+                if uav_i.id == target_j_id: continue # 自分自身は計算しない
                 
-                uav_r = self.uavs[r_id - 1]
+                target_j_uav = self.uavs[target_j_id - 1]
                 
-                # x̂_{r,k} = π_{i,k}^{ir} + π_{r,k}^{r1}
-                if r_id in uav_i.fused_estimates and target_j_id in uav_r.fused_estimates:
-                    pi_ir = uav_i.fused_estimates[r_id] # iのrに対する推定値
-                    pi_rj = uav_r.fused_estimates[target_j_id] # rの1に対する推定値
-                    indirect_est = pi_ir + pi_rj
-                    indirect_estimates_list.append(indirect_est)
+                # 重みκを計算 (iからjへの重み)
+                kappa_D, kappa_I = self.estimator.calc_estimation_kappa(uav_i.neighbors, target_j_id)
+                
+                # ノイズ付き相対速度 v_ij を取得
+                noisy_v_ij, _, _ = self.get_noisy_measurements(uav_i, target_j_uav)
+                
+                # 間接推定値 x̂_{r,k}^{ij} のリストを作成
+                indirect_estimates_list = []
+                for r_id in uav_i.neighbors:
+                    if r_id == target_j_id: continue # j自身は除く
+                    
+                    uav_r = self.uavs[r_id - 1]
+                    
+                    # x̂_{r,k} = π_{i,k}^{ir} + π_{r,k}^{rj}
+                    if r_id in uav_i.fused_estimates and target_j_id in uav_r.fused_estimates:
+                        pi_ir = uav_i.fused_estimates[r_id] # iのrに対する推定値
+                        pi_rj = uav_r.fused_estimates[target_j_id] # rのjに対する推定値
+                        indirect_est = pi_ir + pi_rj
+                        indirect_estimates_list.append(indirect_est)
 
-            # 式(5)の計算
-            # iからj=1への直接推定値を取得。隣接機でなければNone
-            direct_estimate_x_hat = uav_i.direct_estimates.get(target_j_id, None)
-            
-            # 隣接機でない場合(kappa_D=0)、直接推定値は使われない
-            # 融合推定が発散しないよう、direct_estimate_x_hatがNoneでもダミーの値(pi_k)を入れる
-            if direct_estimate_x_hat is None:
-                direct_estimate_x_hat = uav_i.fused_estimates[target_j_id] # ダミー
+                # 式(5)の計算
+                # iからjへの直接推定値は (2-A) で計算済み
+                direct_estimate_x_hat = uav_i.direct_estimates[target_j_id]
 
-            next_fused = self.estimator.calc_fused_RL_estimate(
-                pi_ij_i_k=uav_i.fused_estimates[target_j_id],
-                direct_estimate_x_hat=direct_estimate_x_hat,
-                indirect_estimates=indirect_estimates_list,
-                noisy_v=noisy_v_ij,
-                T=self.dt,
-                kappa_D=kappa_D,
-                kappa_I=kappa_I
-            )
-            next_fused_estimates[uav_i.id][target_j_id] = next_fused
-        
-        # 3. 推定値を一斉に更新
-        for uav in self.uavs:
-            if uav.id in next_direct_estimates:
-                uav.direct_estimates.update(next_direct_estimates[uav.id])
-            if uav.id in next_fused_estimates:
-                uav.fused_estimates.update(next_fused_estimates[uav.id])
+                next_fused = self.estimator.calc_fused_RL_estimate(
+                    pi_ij_i_k=uav_i.fused_estimates[target_j_id],
+                    direct_estimate_x_hat=direct_estimate_x_hat,
+                    indirect_estimates=indirect_estimates_list,
+                    noisy_v=noisy_v_ij,
+                    T=self.dt,
+                    kappa_D=kappa_D,
+                    kappa_I=kappa_I
+                )
+                next_fused_estimates[uav_i.id][target_j_id] = next_fused
+        # ★★★ ここまでが修正箇所 ★★★
 
         # 4. 結果をhistoryに記録 [cite: 2]
         self.history['time'].append(self.time)
