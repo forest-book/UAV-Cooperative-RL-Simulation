@@ -242,9 +242,9 @@ if __name__ == '__main__':
             1: [],
             2: [1],
             3: [1, 4, 5],
-            4: [1, 3, 5],
+            4: [1],
             5: [3, 4],
-            6: [5]
+            6: [4]
         },
         'NOISE': { # [cite: 13]
             'delta_bar': 0.5,
@@ -264,5 +264,5 @@ if __name__ == '__main__':
     env.save_RL_to_csv()
 
     # Plot results from CSV
-    Plotter.plot_errors_from_csv()
     Plotter.plot_trajectories_from_csv()
+    Plotter.plot_errors_from_csv()
