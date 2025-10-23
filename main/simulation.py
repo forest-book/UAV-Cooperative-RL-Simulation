@@ -207,22 +207,6 @@ class Environment:
     def plot_results(self):
         """5節: 結果のグラフ描画"""
         print("グラフを生成中...")
-        
-        # --- 図4(a), (d)相当: 全UAVの軌跡 ---
-        plt.figure(figsize=(10, 8))
-        for i in range(1, 7):
-            positions = np.array(self.history[f'uav{i}_true_pos'])
-            plt.plot(positions[:, 0], positions[:, 1], label=f'UAV {i}')
-            plt.scatter(positions[0, 0], positions[0, 1], marker='o', label=f'UAV {i} Start')
-            plt.scatter(positions[-1, 0], positions[-1, 1], marker='x', label=f'UAV {i} End')
-        plt.title('UAV Trajectories (Scenario: ' + self.params.get('event', 'Continuous') + ')')
-        plt.xlabel('X position (m)')
-        plt.ylabel('Y position (m)')
-        plt.legend()
-        plt.grid(True)
-        plt.axis('equal')
-        plt.show()
-
         # --- 図4(b), (e)相当: 融合推定誤差 ---
         fig, ax = plt.subplots(figsize=(12, 6))
         
@@ -283,24 +267,6 @@ class Environment:
                 print(f" {i}1  | {'N/A':<18} | {'N/A':<15}")
         print("="*50)
 
-    def save_errors_to_csv(self, filename):
-        """
-        Save fusion estimation errors to a CSV file.
-
-        Parameters:
-            filename (str): Name of the CSV file to save.
-        """
-        with open(filename, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            # Write headers
-            headers = ['time'] + [f'uav{i}_fused_error' for i in range(2, 7)]
-            writer.writerow(headers)
-
-            # Write data
-            for t, errors in zip(self.history['time'], zip(*[self.history[f'uav{i}_fused_error'] for i in range(2, 7)])):
-                row = [t] + list(errors)
-                writer.writerow(row)
-
     def seve_trajectories(self):
         self.data_logger.save_trajectories_data_to_csv()
 
@@ -346,10 +312,9 @@ if __name__ == '__main__':
     # 5節: 出力と評価
     env.plot_results()
     env.print_statistics()
-    
+    print("グラフを生成中...")
     # Save history to CSV after simulation
     env.data_logger.save_trajectories_data_to_csv()
-    env.save_errors_to_csv('fusion_errors.csv')
     env.save_RL_to_csv()
 
     # Plot results from CSV
