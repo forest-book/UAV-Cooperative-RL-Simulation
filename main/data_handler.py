@@ -42,6 +42,7 @@ class DataLogger:
             for t, positions in zip(self.timestamp, zip(*[self.uav_trajectories[f'uav{i}_true_pos'] for i in range(1, 7)])):
                 row = [t] + [pos[0] for pos in positions] + [pos[1] for pos in positions]
                 writer.writerow(row)
+        print(f"Data successfully saved to {filename}")
 
 
 
