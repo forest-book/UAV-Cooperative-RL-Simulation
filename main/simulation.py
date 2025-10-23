@@ -392,5 +392,4 @@ if __name__ == '__main__':
 
     # Plot results from CSV
     env.plot_results_from_csv('simulation_history.csv')
-    #env.plot_errors_from_csv('fusion_errors.csv')
     Plotter.plot_errors_from_csv('fusion_errors.csv')
