@@ -4,7 +4,7 @@ from collections import defaultdict
 from typing import List, Dict, Tuple
 from quadcopter import UAV
 from estimator import Estimator
-from data_handler import Plotter
+from data_handler import Plotter, DataLogger
 import csv
 
 # ---------------------------------------------------------------------------- #
@@ -23,6 +23,7 @@ class Environment:
         
         # ユーザー提供のEstimatorをインスタンス化
         self.estimator = Estimator()
+        self.data_logger = DataLogger()
         
         self._setup_scenario()
 
@@ -156,12 +157,14 @@ class Environment:
 
         # 4. 結果をhistoryに記録 [cite: 2]
         self.history['time'].append(self.time)
+        self.data_logger.logging_timestamp(self.time)
         true_pos_uav1 = self.uavs[0].true_position
         target_j_id = self.params['TARGET_ID'] # ターゲットはUAV1 [cite: 7]
 
         for uav_i in self.uavs:
             # 全UAVの真の軌跡を記録
             self.history[f'uav{uav_i.id}_true_pos'].append(uav_i.true_position.copy())
+            self.data_logger.logging_uav_trajectories(uav_i.id, uav_i.true_position.copy())
             
             # UAV1をターゲットとする誤差を記録
             if uav_i.id != target_j_id:
@@ -286,33 +289,6 @@ class Environment:
                 row = [t] + [pos[0] for pos in positions] + [pos[1] for pos in positions]
                 writer.writerow(row)
 
-    def plot_results_from_csv(self, filename):
-        """
-        Plot UAV trajectories from a CSV file.
-
-        Parameters:
-            filename (str): Name of the CSV file to read.
-        """
-        import pandas as pd
-
-        # Read CSV file
-        data = pd.read_csv(filename)
-
-        plt.figure(figsize=(10, 8))
-        for i in range(1, 7):
-            x_positions = data[f'uav{i}_true_pos_x']
-            y_positions = data[f'uav{i}_true_pos_y']
-            plt.plot(x_positions, y_positions, label=f'UAV {i}')
-            plt.scatter(x_positions.iloc[0], y_positions.iloc[0], marker='o', label=f'UAV {i} Start')
-            plt.scatter(x_positions.iloc[-1], y_positions.iloc[-1], marker='x', label=f'UAV {i} End')
-
-        plt.title('UAV Trajectories from CSV')
-        plt.xlabel('X position (m)')
-        plt.ylabel('Y position (m)')
-        plt.legend()
-        plt.grid(True)
-        plt.axis('equal')
-        plt.show()
 
     def save_errors_to_csv(self, filename):
         """
@@ -332,6 +308,9 @@ class Environment:
                 row = [t] + list(errors)
                 writer.writerow(row)
 
+    def seve_trajectories(self):
+        self.data_logger.save_trajectories_data_to_csv()
+
 # ---------------------------------------------------------------------------- #
 # 4. メイン実行ブロック (仕様書 4節)
 # ---------------------------------------------------------------------------- #
@@ -344,7 +323,7 @@ if __name__ == '__main__':
         'TARGET_ID': 1, # 推定目標 [cite: 7]
         
         # 4.2節: シナリオ選択
-        'event': 'sudden_turn', # 
+        'event': 'Continuous', # 
         
         'INITIAL_POSITIONS': { # [cite: 8]
             1: [0, 0], 2: [2, -30], 3: [20, -15],
@@ -374,8 +353,9 @@ if __name__ == '__main__':
     
     # Save history to CSV after simulation
     env.save_history_to_csv('simulation_history.csv')
+    env.data_logger.save_trajectories_data_to_csv()
     env.save_errors_to_csv('fusion_errors.csv')
 
     # Plot results from CSV
-    env.plot_results_from_csv('simulation_history.csv')
     Plotter.plot_errors_from_csv('fusion_errors.csv')
+    Plotter.plot_trajectories_from_csv()
