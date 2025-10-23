@@ -1,11 +1,9 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from collections import defaultdict
 from typing import List, Dict, Tuple
 from quadcopter import UAV
 from estimator import Estimator
 from data_handler import Plotter, DataLogger
-import csv
 
 # ---------------------------------------------------------------------------- #
 # 3. Environment クラスの実装 (仕様書 3.3節)
@@ -186,9 +184,11 @@ class Environment:
                     fused_estimate = uav_i.fused_estimates[target_j_id]
                     error = np.linalg.norm(fused_estimate - true_relative_pos)
                     self.history[f'uav{uav_i.id}_fused_error'].append(error)
+                    self.data_logger.logging_fused_RL_error(uav_i.id, error)
                 else:
                     # 推定値がない場合 (UAV6など)
-                    self.history[f'uav{uav_i.id}_fused_error'].append(None) 
+                    self.history[f'uav{uav_i.id}_fused_error'].append(None)
+                    self.data_logger.logging_fused_RL_error(uav_i.id, None)
         
         self.time += self.dt
 
@@ -201,63 +201,6 @@ class Environment:
                 print(f"進捗: {i * 100 // num_steps}%")
             self.run_step()
         print("シミュレーション完了。")
-
-    def plot_results(self):
-        """5節: 結果のグラフ描画"""
-        print("グラフを生成中...")
-        
-        # --- 図4(a), (d)相当: 全UAVの軌跡 ---
-        plt.figure(figsize=(10, 8))
-        for i in range(1, 7):
-            positions = np.array(self.history[f'uav{i}_true_pos'])
-            plt.plot(positions[:, 0], positions[:, 1], label=f'UAV {i}')
-            plt.scatter(positions[0, 0], positions[0, 1], marker='o', label=f'UAV {i} Start')
-            plt.scatter(positions[-1, 0], positions[-1, 1], marker='x', label=f'UAV {i} End')
-        plt.title('UAV Trajectories (Scenario: ' + self.params.get('event', 'Continuous') + ')')
-        plt.xlabel('X position (m)')
-        plt.ylabel('Y position (m)')
-        plt.legend()
-        plt.grid(True)
-        plt.axis('equal')
-        plt.show()
-
-        # --- 図4(b), (e)相当: 融合推定誤差 ---
-        fig, ax = plt.subplots(figsize=(12, 6))
-        
-        # 凡例が論文と一致するように調整
-        colors = {2: 'c', 3: 'b', 4: 'g', 5: 'r', 6: 'm'} # 論文の配色に合わせる
-        
-        for i in range(2, 7):
-            errors = self.history[f'uav{i}_fused_error']
-            valid_times = [t for t, e in zip(self.history['time'], errors) if e is not None]
-            valid_errors = [e for e in errors if e is not None]
-            
-            if valid_errors:
-                ax.plot(valid_times, valid_errors, 
-                        label=f'$||\pi_{{{i}1}} - \chi_{{{i}1}}||$', 
-                        color=colors.get(i, 'k'))
-        
-        ax.set_title('consensus-based RL fusion estimation', fontsize=16, fontweight='bold')
-        ax.set_xlabel('$k$ (sec)', fontsize=14)
-        ax.set_ylabel('$||\pi_{ij}(k) - \chi_{ij}(k)||$ (m)', fontsize=14)
-        ax.set_ylim(0, 1.0) # 誤差が有界であることを示すため、Y軸の上限を1.0に設定
-        ax.legend()
-        ax.grid(True)
-        
-        # 図4(e)のズームインした図を挿入
-        axins = ax.inset_axes([0.5, 0.5, 0.4, 0.4])
-        for i in range(2, 7):
-             errors = self.history[f'uav{i}_fused_error']
-             valid_times = [t for t, e in zip(self.history['time'], errors) if e is not None]
-             valid_errors = [e for e in errors if e is not None]
-             if valid_errors:
-                axins.plot(valid_times, valid_errors, color=colors.get(i, 'k'))
-        axins.set_xlim(100, 150) # 論文のズーム範囲に合わせる
-        axins.set_ylim(0, 0.6)
-        axins.grid(True)
-        ax.indicate_inset_zoom(axins, edgecolor="black") # ズーム箇所を四角で表示
-
-        plt.show()
 
     def print_statistics(self):
         """5節: 統計データ（表I相当）の出力 """
@@ -281,45 +224,11 @@ class Environment:
                 print(f" {i}1  | {'N/A':<18} | {'N/A':<15}")
         print("="*50)
 
-    def save_history_to_csv(self, filename):
-        """
-        Save simulation history to a CSV file.
-
-        Parameters:
-            filename (str): Name of the CSV file to save.
-        """
-        with open(filename, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            # Write headers
-            headers = ['time'] + [f'uav{i}_true_pos_x' for i in range(1, 7)] + [f'uav{i}_true_pos_y' for i in range(1, 7)]
-            writer.writerow(headers)
-
-            # Write data
-            for t, positions in zip(self.history['time'], zip(*[self.history[f'uav{i}_true_pos'] for i in range(1, 7)])):
-                row = [t] + [pos[0] for pos in positions] + [pos[1] for pos in positions]
-                writer.writerow(row)
-
-
-    def save_errors_to_csv(self, filename):
-        """
-        Save fusion estimation errors to a CSV file.
-
-        Parameters:
-            filename (str): Name of the CSV file to save.
-        """
-        with open(filename, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            # Write headers
-            headers = ['time'] + [f'uav{i}_fused_error' for i in range(2, 7)]
-            writer.writerow(headers)
-
-            # Write data
-            for t, errors in zip(self.history['time'], zip(*[self.history[f'uav{i}_fused_error'] for i in range(2, 7)])):
-                row = [t] + list(errors)
-                writer.writerow(row)
-
     def seve_trajectories(self):
         self.data_logger.save_trajectories_data_to_csv()
+
+    def save_RL_to_csv(self):
+        self.data_logger.save_fused_RL_errors_to_csv()
 
 # ---------------------------------------------------------------------------- #
 # 4. メイン実行ブロック (仕様書 4節)
@@ -360,12 +269,11 @@ if __name__ == '__main__':
     # 5節: 出力と評価
     env.plot_results()
     env.print_statistics()
-    
+    print("グラフを生成中...")
     # Save history to CSV after simulation
-    env.save_history_to_csv('simulation_history.csv')
     env.data_logger.save_trajectories_data_to_csv()
-    env.save_errors_to_csv('fusion_errors.csv')
+    env.save_RL_to_csv()
 
     # Plot results from CSV
-    Plotter.plot_errors_from_csv('fusion_errors.csv')
+    Plotter.plot_errors_from_csv()
     Plotter.plot_trajectories_from_csv()

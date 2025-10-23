@@ -14,15 +14,18 @@ class DataLogger:
     シミュレーション中のデータを収集し、CSVファイルに保存するクラス。
     """
     def __init__(self):
-        self.data: List = []
         self.timestamp: List[float] = []
         self.uav_trajectories: Dict[str, List[np.ndarray]] = defaultdict(list)
+        self.fused_RL_errors: Dict[str, List[np.ndarray]] = defaultdict(list)
 
     def logging_timestamp(self, time: float):
         self.timestamp.append(time)
 
     def logging_uav_trajectories(self, uav_id: int, uav_position: np.ndarray):
         self.uav_trajectories[f"uav{uav_id}_true_pos"].append(uav_position.copy())
+
+    def logging_fused_RL_error(self, uav_id: int, error: float):
+        self.fused_RL_errors[f"uav{uav_id}_fused_error"].append(error)
 
     def save_trajectories_data_to_csv(self, filename: str = f'uav_trajectories_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
         """
@@ -31,7 +34,7 @@ class DataLogger:
         Args:
             filename (str): 保存するCSVファイル名
         """
-        dir_path = "../data/csv//trajectories/" + filename
+        dir_path = "../data/csv/trajectories/" + filename
         with open(dir_path, mode='w', newline='') as file:
             writer = csv.writer(file)
             # Write headers
@@ -44,7 +47,25 @@ class DataLogger:
                 writer.writerow(row)
         print(f"Data successfully saved to {filename}")
 
+    def save_fused_RL_errors_to_csv(self, filename: str = f'fused_RL_error_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
+        """
+        相対自己位置の融合推定誤差をcsv保存する関数
 
+        Args:
+            filename (str): 保存するCSVファイル名
+        """
+        dir_path = "../data/csv/RL_errors/" + filename
+        with open(dir_path, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            # Write headers
+            headers = ['time'] + [f'uav{i}_fused_error' for i in range(2, 7)]
+            writer.writerow(headers)
+
+            # Write data
+            for t, errors in zip(self.timestamp, zip(*[self.fused_RL_errors[f'uav{i}_fused_error'] for i in range(2, 7)])):
+                row = [t] + list(errors)
+                writer.writerow(row)
+        print(f"Data successfully saved to {filename}")
 
 class Plotter:
     @staticmethod
@@ -84,7 +105,7 @@ class Plotter:
             print(f"An error occurred while plotting: {e}")
 
     @staticmethod
-    def plot_errors_from_csv(filename: str):
+    def plot_errors_from_csv(filename: str = f'fused_RL_error_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
         """
         Plot fusion estimation errors from a CSV file.
 
@@ -93,7 +114,8 @@ class Plotter:
         """
 
         # Read CSV file
-        data = pd.read_csv(filename)
+        file_path = f"../data/csv/RL_errors/{filename}"
+        data = pd.read_csv(file_path)
 
         fig, ax = plt.subplots(figsize=(12, 6))
         colors = {2: 'c', 3: 'b', 4: 'g', 5: 'r', 6: 'm'}
@@ -115,5 +137,22 @@ class Plotter:
         ax.legend()
         ax.grid(True)
 
+        # 図4(e)のズームインした図を挿入
+        axins = ax.inset_axes([0.5, 0.5, 0.4, 0.4])
+        for i in range(2, 7):
+             errors = data[f'uav{i}_fused_error']
+             valid_times = [t for t, e in zip(data['time'], errors) if e is not None]
+             valid_errors = [e for e in errors if e is not None]
+             if valid_errors:
+                axins.plot(valid_times, valid_errors, color=colors.get(i, 'k'))
+        axins.set_xlim(100, 150) # 論文のズーム範囲に合わせる
+        axins.set_ylim(0, 0.6)
+        axins.grid(True)
+        ax.indicate_inset_zoom(axins, edgecolor="black") # ズーム箇所を四角で表示
+
+        #todo グラフズーム範囲の修正
+        plt.savefig(f'../data/graph/RL_errors/fused_RL_errors_graph_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.png')
+        print(f"Graph successfully saved to fused_RL_errors_graph_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.png")
+        
         plt.show()
 
