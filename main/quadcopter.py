@@ -12,9 +12,9 @@ class UAV:
     論文 V-A-1節「Configuration」に基づき、UAVのダイナミクスを定義
     """
     def __init__(self, uav_id: int, initial_position: np.ndarray):
-        self.id = uav_id
+        self.id: int = uav_id
         self.true_position = np.array(initial_position, dtype=float)
-        self.velocity = np.zeros(2, dtype=float)
+        self.velocity: np.ndarray = np.zeros(2, dtype=float)
 
         # 推定値を保持する辞書 {target_id: estimate_vector}
         self.direct_estimates: Dict[int, np.ndarray] = {}
