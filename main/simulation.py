@@ -17,7 +17,7 @@ class Environment:
         self.uavs: List[UAV] = [] 
         self.time: float = 0.0 
         self.dt: float = params['T'] 
-        self.history = defaultdict(list) 
+        self.history = defaultdict(list)
         
         # ユーザー提供のEstimatorをインスタンス化
         self.estimator = Estimator()
@@ -107,7 +107,6 @@ class Environment:
                 )
                 next_direct_estimates[uav_i.id][neighbor_id] = next_direct
 
-        # ★★★ ここからが修正箇所 ★★★
         # 2-B. 融合推定 (式5) の計算
         # 全UAV (i) が、自身の *全ての隣接機* (j) への融合推定を計算する
         for uav_i in self.uavs:
@@ -151,10 +150,8 @@ class Environment:
                     kappa_I=kappa_I
                 )
                 next_fused_estimates[uav_i.id][target_j_id] = next_fused
-        # ★★★ ここまでが修正箇所 ★★★
 
         # 4. 結果をhistoryに記録 [cite: 2]
-        self.history['time'].append(self.time)
         self.data_logger.logging_timestamp(self.time)
         true_pos_uav1 = self.uavs[0].true_position
         target_j_id = self.params['TARGET_ID'] # ターゲットはUAV1 [cite: 7]
@@ -180,6 +177,14 @@ class Environment:
                     self.history[f'uav{uav_i.id}_fused_error'].append(None)
                     self.data_logger.logging_fused_RL_error(uav_i.id, None)
         
+        # 3. 全UAVの推定器の状態を k+1 に更新
+        for uav_i in self.uavs:
+            for target_id, estimate in next_direct_estimates[uav_i.id].items():
+                uav_i.direct_estimates[target_id] = estimate
+            
+            for target_id, estimate in next_fused_estimates[uav_i.id].items():
+                uav_i.fused_estimates[target_id] = estimate
+
         self.time += self.dt
 
     def run_simulation(self, duration: float):
