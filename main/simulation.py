@@ -38,6 +38,7 @@ class Environment:
         for uav_i in self.uavs:
             if uav_i.id in sensing_graph:
                 uav_i.neighbors = sensing_graph[uav_i.id]
+            print(uav_i.neighbors)
 
         # 6節: 推定器の初期値を真の相対位置で初期化
         print("推定器の初期値を計算...")
@@ -74,19 +75,18 @@ class Environment:
         return true_v_ij + vel_noise, true_d_ij + dist_noise, true_d_dot_ij + dist_rate_noise
 
     def run_step(self):
-        """シミュレーションを1ステップ進める [cite: 2]"""
+        """シミュレーションを1ステップ進める"""
         
-        # 1. 全UAVの真の状態を更新 [cite: 2]
+        # 1. 全UAVの真の状態を更新
         for uav in self.uavs:
             uav.update_state(self.time, self.dt, self.params.get('event'))
         
         # 次のステップの推定値を一時保存するバッファ
-        next_direct_estimates = defaultdict(dict)
-        next_fused_estimates = defaultdict(dict)
+        next_direct_estimates: Dict[str, List[np.ndarray]] = defaultdict(list)
+        next_fused_estimates: Dict[str, List[np.ndarray]] = defaultdict(list)
 
-        # 2. 全UAVペアについて推定計算を実行 [cite: 2]
-        
-        # 2-A. 直接推定 (式1) の計算 [cite: 4]
+        # 2. 全UAVペアについて推定計算を実行
+        # 2-A. 直接推定 (式1) の計算
         for uav_i in self.uavs:
             for neighbor_id in uav_i.neighbors:
                 neighbor_uav = self.uavs[neighbor_id - 1]
@@ -103,7 +103,8 @@ class Environment:
                     T=self.dt,
                     gamma=self.params['GAMMA']
                 )
-                next_direct_estimates[uav_i.id][neighbor_id] = next_direct
+                next_direct_estimates[f"chi_hat_{uav_i.id}{neighbor_id}"].append(next_direct.copy())
+                print(next_direct_estimates)
 
         # 2-B. 融合推定 (式5) の計算
         # 全UAV (i) が、自身の *全ての隣接機* (j) への融合推定を計算する
