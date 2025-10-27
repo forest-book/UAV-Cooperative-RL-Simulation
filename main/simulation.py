@@ -261,7 +261,7 @@ if __name__ == '__main__':
     env.print_statistics()
     print("グラフを生成中...")
     # Save history to CSV after simulation
-    env.data_logger.save_trajectories_data_to_csv()
+    env.seve_trajectories()
     env.save_RL_to_csv()
 
     # Plot results from CSV
