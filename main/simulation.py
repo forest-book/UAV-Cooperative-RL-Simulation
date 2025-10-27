@@ -5,9 +5,6 @@ from quadcopter import UAV
 from estimator import Estimator
 from data_handler import Plotter, DataLogger
 
-# ---------------------------------------------------------------------------- #
-# 3. Environment クラスの実装 (仕様書 3.3節)
-# ---------------------------------------------------------------------------- #
 class Environment:
     """
     シミュレーション全体の進行、UAV間の相互作用、データ記録を管理する
@@ -19,7 +16,6 @@ class Environment:
         self.dt: float = params['T'] 
         self.history = defaultdict(list)
         
-        # ユーザー提供のEstimatorをインスタンス化
         self.estimator = Estimator()
         self.data_logger = DataLogger()
         
@@ -28,12 +24,12 @@ class Environment:
     def setup_scenario(self):
         """シミュレーションの初期設定（UAV配置、センシンググラフ）"""
         print("シミュレーションをセットアップ中...")
-        # 4.1節: UAVの生成と初期位置の設定 [cite: 8]
+        # 4.1節: UAVの生成と初期位置の設定
         initial_positions: dict = self.params['INITIAL_POSITIONS']
         for uav_id, pos in initial_positions.items():
             self.uavs.append(UAV(uav_id=uav_id, initial_position=pos))
 
-        # 4.1節: センシンググラフ（隣接関係）の設定 [cite: 9]
+        # 4.1節: センシンググラフ（隣接関係）の設定
         sensing_graph = self.params['SENSING_GRAPH']
         for uav_i in self.uavs:
             if uav_i.id in sensing_graph:
@@ -61,7 +57,7 @@ class Environment:
         # 論文式(1)の上あたりの方程式から算出される
         true_d_dot_ij = (true_x_ij @ true_v_ij) / (true_d_ij + 1e-9) # ゼロ除算防止
 
-        # ノイズモデル (4.1節) [cite: 13]
+        # ノイズモデル (4.1節)
         delta_bar = self.params['NOISE']['delta_bar']
         dist_bound = self.params['NOISE']['dist_bound']
         
@@ -150,10 +146,10 @@ class Environment:
                 )
                 next_fused_estimates[uav_i.id][target_j_id] = next_fused
 
-        # 4. 結果をhistoryに記録 [cite: 2]
+        # 4. 結果をhistoryに記録
         self.data_logger.logging_timestamp(self.time)
         true_pos_uav1 = self.uavs[0].true_position
-        target_j_id = self.params['TARGET_ID'] # ターゲットはUAV1 [cite: 7]
+        target_j_id = self.params['TARGET_ID'] # ターゲットはUAV1
 
         for uav_i in self.uavs:
             # 全UAVの真の軌跡を記録
@@ -231,18 +227,18 @@ if __name__ == '__main__':
     
     # 4.1節: 基本パラメータ設定
     simulation_params = {
-        'T': 0.05,  # サンプリング周期 T [cite: 10]
-        'GAMMA': 0.5, # ゲイン γ [cite: 10]
-        'TARGET_ID': 1, # 推定目標 [cite: 7]
+        'T': 0.05,  # サンプリング周期 T
+        'GAMMA': 0.5, # ゲイン γ
+        'TARGET_ID': 1, # 推定目標
         
         # 4.2節: シナリオ選択
-        'event': 'Continuous', # 
+        'event': 'Continuous',
         
-        'INITIAL_POSITIONS': { # [cite: 8]
+        'INITIAL_POSITIONS': {
             1: [0, 0], 2: [2, -30], 3: [20, -15],
             4: [-20, 8], 5: [-14, 8], 6: [-10, -30]
         },
-        'SENSING_GRAPH': { # [cite: 9]
+        'SENSING_GRAPH': { 
             1: [],
             2: [1],
             3: [1, 4, 5],
@@ -250,7 +246,7 @@ if __name__ == '__main__':
             5: [3, 4],
             6: [4]
         },
-        'NOISE': { # [cite: 13]
+        'NOISE': { 
             'delta_bar': 0.5,
             'dist_bound': 0.05
         }
