@@ -51,11 +51,13 @@ class Environment:
     def get_noisy_measurements(self, uav_i: UAV, uav_j: UAV) -> Tuple[np.ndarray, float, float]:
         """
         2UAV間の真の状態に基づき、ノイズが付加された測定値を生成する [cite: 2, 13, 18]
+        シミュレータ上に測距モジュールがあるなら不要となる関数
         """
         # 真の相対値
         true_x_ij = uav_j.true_position - uav_i.true_position
-        true_v_ij = uav_j.true_velocity - uav_i.true_velocity
-        true_d_ij = np.linalg.norm(true_x_ij)
+        true_v_ij = uav_j.true_velocity - uav_i.true_velocity # 自機の速度情報はUWB RCM通信で送られてくる
+        true_d_ij = np.linalg.norm(true_x_ij) # UWBモジュールでの測距を模している
+        # 論文式(1)の上あたりの方程式から算出される
         true_d_dot_ij = (true_x_ij @ true_v_ij) / (true_d_ij + 1e-9) # ゼロ除算防止
 
         # ノイズモデル (4.1節) [cite: 13]
