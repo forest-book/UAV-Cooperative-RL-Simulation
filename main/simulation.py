@@ -23,13 +23,13 @@ class Environment:
         self.estimator = Estimator()
         self.data_logger = DataLogger()
         
-        self._setup_scenario()
+        self.setup_scenario()
 
-    def _setup_scenario(self):
+    def setup_scenario(self):
         """シミュレーションの初期設定（UAV配置、センシンググラフ）"""
         print("シミュレーションをセットアップ中...")
         # 4.1節: UAVの生成と初期位置の設定 [cite: 8]
-        initial_positions = self.params['INITIAL_POSITIONS']
+        initial_positions: dict = self.params['INITIAL_POSITIONS']
         for uav_id, pos in initial_positions.items():
             self.uavs.append(UAV(uav_id=uav_id, initial_position=pos))
 
@@ -38,10 +38,6 @@ class Environment:
         for uav_i in self.uavs:
             if uav_i.id in sensing_graph:
                 uav_i.neighbors = sensing_graph[uav_i.id]
-
-        # 4.1節: 重み(kappa)計算のための隣接機数を保存 [cite: 11]
-        for uav_i in self.uavs:
-            uav_i.cardinality_Ni = len(uav_i.neighbors)
 
         # 6節: 推定器の初期値を真の相対位置で初期化
         print("推定器の初期値を計算...")
