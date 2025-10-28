@@ -14,6 +14,9 @@ class MainController:
         self.estimator = Estimator()
         self.data_logger = DataLogger()
 
+    def initialize(self):
+        print("init")
+
     def run(self):
         print("hollo")
 
