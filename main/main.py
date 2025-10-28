@@ -11,6 +11,9 @@ class MainController:
     def __init__(self, params: dict):
         self.params = params
 
+        self.estimator = Estimator()
+        self.data_logger = DataLogger()
+
     def run(self):
         print("hollo")
 
