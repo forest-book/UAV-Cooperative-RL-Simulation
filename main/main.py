@@ -10,15 +10,24 @@ class MainController:
     """アプリケーション全体を管理し，メインループを実行する"""
     def __init__(self, params: dict):
         self.params = params
+        self.uavs: List[UAV] = []
 
         self.estimator = Estimator()
         self.data_logger = DataLogger()
 
     def initialize(self):
-        print("init")
+        """システムの初期化"""
+        print("ititialize simulation settings...")
+        # UAVインスタンス化と初期位置の設定
+        initial_positions: dict = self.params['INITIAL_POSITIONS']
+        for uav_id, position in initial_positions.items():
+            self.uavs.append(UAV(uav_id=uav_id, initial_position=position))
+        
+        for uav in self.uavs:
+            print(uav.id, uav.true_position)
 
     def run(self):
-        print("hollo")
+        self.initialize()
 
 
 if __name__ == '__main__':
