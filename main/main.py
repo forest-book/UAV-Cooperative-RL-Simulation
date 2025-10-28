@@ -11,10 +11,13 @@ class MainController:
     def __init__(self, params: dict):
         self.params = params
 
+    def run(self):
+        print("hollo")
 
 
 if __name__ == '__main__':
     simulation_params = {
+        'DURATION': 300,
         'T': 0.05,  # サンプリング周期 T
         'GAMMA': 0, # ゲイン γ
         'TARGET_ID': 1, # 推定目標
@@ -36,3 +39,6 @@ if __name__ == '__main__':
             'dist_bound': 0.05
         }
     }
+
+    controller = MainController(simulation_params)
+    controller.run()
