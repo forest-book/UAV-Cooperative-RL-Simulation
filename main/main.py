@@ -22,9 +22,25 @@ class MainController:
         initial_positions: dict = self.params['INITIAL_POSITIONS']
         for uav_id, position in initial_positions.items():
             self.uavs.append(UAV(uav_id=uav_id, initial_position=position))
-        
+        # デバッグ用のプリント文
+        # for uav in self.uavs:
+        #     print(uav.id, uav.true_position)
+
+        # 各UAV機の隣接機を設定
+        neighbors_setting = self.params['NEIGHBORS']
         for uav in self.uavs:
-            print(uav.id, uav.true_position)
+            if uav.id in neighbors_setting:
+                uav.neighbors = neighbors_setting[uav.id]
+            #print(uav.neighbors)
+
+        # k=0での直接推定値を設定(直接推定値の初期化)
+        # 隣接機に対してのみ初期化
+        for uav in self.uavs:
+            for neighbor_id in uav.neighbors:
+                neighbor_uav = self.uavs[neighbor_id - 1]
+                true_initial_rel_pos = neighbor_uav.true_position - uav.true_position
+                uav.direct_estimates[neighbor_id] = true_initial_rel_pos.copy()
+            #print(uav.direct_estimates)
 
     def run(self):
         self.initialize()
