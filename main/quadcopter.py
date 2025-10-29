@@ -14,7 +14,23 @@ class UAV:
     def __init__(self, uav_id: int, initial_position: np.ndarray):
         self.id: int = uav_id
         self.true_position = np.array(initial_position, dtype=float)
-        self.velocity: np.ndarray = np.zeros(2, dtype=float)
+        
+        k = 0
+        # 論文記載の速度式
+        if self.id == 1:
+            self.true_velocity = np.array([np.cos(k / 3), -5/3 * np.sin(k / 3)])
+        elif self.id == 2:
+            self.true_velocity = np.array([-2 * np.sin(k), 2 * np.cos(k)]) # 論文のv_2kのy成分はsin(k)だが、軌跡からcos(k)の誤植と判断
+        elif self.id == 3:
+            self.true_velocity = np.array([np.cos(k/5) - np.sin(k/5) * np.cos(k), np.sin(k/5) + np.cos(k/5) * np.cos(k)])
+        elif self.id == 4:
+            self.true_velocity = np.array([-3 * np.sin(k), 3 * np.cos(k)])
+        elif self.id == 5:
+            self.true_velocity = np.array([1/6, 0])
+        elif self.id == 6:
+            self.true_velocity = np.array([-10/3 * np.sin(k/3), 5/3 * np.cos(k/3)])
+        else:
+            raise ValueError("Invalid uav_id")
 
         # 推定値を保持する辞書 {target_id: estimate_vector}
         self.direct_estimates: Dict[int, np.ndarray] = {}
