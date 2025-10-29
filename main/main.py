@@ -43,6 +43,7 @@ class MainController:
                 uav.direct_estimates[neighbor_id] = true_initial_rel_pos.copy()
             #print(uav.direct_estimates)
 
+        # 推定式はステップk(自然数)毎に状態を更新するため
         self.loop_amount = int(self.params['DURATION'] / self.params['T'])
 
     def run(self):
