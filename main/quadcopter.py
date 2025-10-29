@@ -37,7 +37,7 @@ class UAV:
         self.fused_estimates: Dict[int, np.ndarray] = {}
         self.neighbors: List[int] = []
 
-    def update_state(self, t: float, dt: float, event: Senario = Senario.CONTINUOUS):
+    def update_state(self, t: int, dt: float, event: Senario = Senario.CONTINUOUS):
         """UAVの真の位置と速度を更新する"""
         k=t
         # 論文記載の速度式
