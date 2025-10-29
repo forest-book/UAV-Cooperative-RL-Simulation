@@ -55,7 +55,7 @@ class UAV:
             self.true_velocity = np.array([-10/3 * np.sin(k/3), 5/3 * np.cos(k/3)])
 
             # シナリオ2: UAV4の急な機動変更イベント
-        if self.id == 4 and event == 'sudden_turn' and 100 <= t < 101:
+        if self.id == 4 and event == Senario.SUDDEN_TURN and 100 <= t < 101:
             self.true_velocity += np.array([5.0, 5.0]) # 外乱を追加
 
         # 位置の更新
