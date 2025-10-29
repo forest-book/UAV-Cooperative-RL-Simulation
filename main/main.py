@@ -49,10 +49,11 @@ class MainController:
         for i in range(1,6):
             true_initial_rel_pos: np.ndarray = self.uavs[target_id - 1].true_position - self.uavs[i].true_position
             self.uavs[i].fused_estimates[target_id] = true_initial_rel_pos.copy()
-            print(self.uavs[i].fused_estimates)
+            #print(self.uavs[i].fused_estimates)
 
         # 推定式はステップk(自然数)毎に状態を更新するため
         self.loop_amount = int(self.params['DURATION'] / self.params['T'])
+        #print(f"step num: {self.loop_amount}")
 
     def run(self):
         self.initialize()
