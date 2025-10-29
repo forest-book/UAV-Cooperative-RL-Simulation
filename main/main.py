@@ -11,6 +11,7 @@ class MainController:
     def __init__(self, params: dict):
         self.params = params
         self.uavs: List[UAV] = []
+        self.loop_amount: int = 0
 
         self.estimator = Estimator()
         self.data_logger = DataLogger()
@@ -41,6 +42,8 @@ class MainController:
                 true_initial_rel_pos = neighbor_uav.true_position - uav.true_position
                 uav.direct_estimates[neighbor_id] = true_initial_rel_pos.copy()
             #print(uav.direct_estimates)
+
+        self.loop_amount = int(self.params['DURATION'] / self.params['T'])
 
     def run(self):
         self.initialize()
