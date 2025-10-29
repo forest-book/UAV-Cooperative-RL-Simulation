@@ -12,6 +12,8 @@ class MainController:
         self.params = params
         self.uavs: List[UAV] = []
         self.loop_amount: int = 0
+        self.dt = params['T']   # サンプリング周期
+        self.event = params['EVENT']    # t=100sで外乱を加えるか否か
 
         self.estimator = Estimator()
         self.data_logger = DataLogger()
@@ -56,7 +58,16 @@ class MainController:
         #print(f"step num: {self.loop_amount}")
 
     def run(self):
+        """メインループの実行"""
         self.initialize()
+
+        #for loop in self.loop_amount:
+        for loop in range(5): #5ループでのデバッグ用
+            
+            
+
+
+
 
 
 if __name__ == '__main__':
