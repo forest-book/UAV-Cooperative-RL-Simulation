@@ -43,6 +43,14 @@ class MainController:
                 uav.direct_estimates[neighbor_id] = true_initial_rel_pos.copy()
             #print(uav.direct_estimates)
 
+        # k=0での融合推定値を設定(融合推定値の初期化)
+        # UAV_i(i=2~6)から見たUAV1の相対位置を融合推定
+        target_id = self.params['TARGET_ID']
+        for i in range(1,6):
+            true_initial_rel_pos: np.ndarray = self.uavs[target_id - 1].true_position - self.uavs[i].true_position
+            self.uavs[i].fused_estimates[target_id] = true_initial_rel_pos.copy()
+            print(self.uavs[i].fused_estimates)
+
         # 推定式はステップk(自然数)毎に状態を更新するため
         self.loop_amount = int(self.params['DURATION'] / self.params['T'])
 
