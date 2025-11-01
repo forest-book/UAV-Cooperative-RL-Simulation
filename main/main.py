@@ -89,7 +89,7 @@ class MainController:
         #for loop in self.loop_amount:
         for loop in range(1): #5ループでのデバッグ用
             
-            # 直接推定の実行
+            # 1.直接推定の実行
             for uav_i in self.uavs:
                 # 各UAVが自機のすべての隣接機に対して行う
                 print(f"uav_{uav_i.id}")
@@ -113,6 +113,12 @@ class MainController:
                     print(f"直接推定値: {next_direct}")
                     print("-"*50)
                 print("="*50)
+
+            # 2.融合推定の実行
+            # UAV_i(i=2~6)がUAV_1への融合推定値を算出する
+            target_j_id = self.params.get('TARGET_ID')
+            target_j_uav = self.uavs[target_j_id - 1]
+            
 
 
 
