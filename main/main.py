@@ -120,9 +120,15 @@ class MainController:
 
             # 2.融合推定の実行
             # UAV_i(i=2~6)がUAV_1への融合推定値を算出する
-            target_j_id = self.params.get('TARGET_ID')
-            target_j_uav = self.uavs[target_j_id - 1]
-            
+            # target_j_id = self.params.get('TARGET_ID')
+            # target_j_uav = self.uavs[target_j_id - 1]
+
+            # 全UAVの状態を k+1 に更新
+            for uav in self.uavs:
+                uav.update_state(t=loop, dt=self.dt)
+                #print(uav.direct_estimates)
+
+
 
 
 
