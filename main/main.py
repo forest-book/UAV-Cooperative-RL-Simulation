@@ -42,7 +42,7 @@ class MainController:
             for neighbor_id in uav.neighbors:
                 neighbor_uav = self.uavs[neighbor_id - 1]
                 true_initial_rel_pos = neighbor_uav.true_position - uav.true_position
-                uav.direct_estimates[neighbor_id] = true_initial_rel_pos.copy()
+                uav.direct_estimates[f"chi_{uav.id}_{neighbor_id}"].append(true_initial_rel_pos.copy())
             #print(uav.direct_estimates)
 
         # k=0での融合推定値を設定(融合推定値の初期化)
@@ -88,7 +88,7 @@ class MainController:
 
         #for loop in self.loop_amount:
         for loop in range(1): #5ループでのデバッグ用
-            
+            print(f"***** sim step {loop + 1} *****")
             # 1.直接推定の実行
             for uav_i in self.uavs:
                 # 各UAVが自機のすべての隣接機に対して行う
@@ -102,14 +102,16 @@ class MainController:
                     print(f"距離: {noisy_d}")
                     print(f"距離の変化率: {noisy_d_dot}")
                     # 式(1)の計算
+                    chi_hat_ij_i_k = uav_i.direct_estimates[f"chi_{uav_i.id}_{neighbor_id}"] # k=loopの時の直接推定値を持ってくる
+                    print(f"前ステップの相対位置: {chi_hat_ij_i_k[loop]}")
                     next_direct = self.estimator.calc_direct_RL_estimate(
-                        chi_hat_ij_i_k=uav_i.direct_estimates[neighbor_id],
+                        chi_hat_ij_i_k=chi_hat_ij_i_k[loop],
                         noisy_v=noisy_v,
                         noisy_d=noisy_d,
                         noisy_d_dot=noisy_d_dot,
                         T=self.dt,
                         gamma=self.params['GAMMA']
-                    )
+                    ) # 次のステップ(k=loop + 1)の時の相対位置を直接推定
                     print(f"直接推定値: {next_direct}")
                     print("-"*50)
                 print("="*50)
