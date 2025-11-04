@@ -1,5 +1,6 @@
 import numpy as np
 from typing import List, Dict
+from collections import defaultdict
 from enum import Enum, auto
 
 class Senario(Enum):
@@ -33,7 +34,7 @@ class UAV:
             raise ValueError("Invalid uav_id")
 
         # 推定値を保持する辞書 {target_id: estimate_vector}
-        self.direct_estimates: Dict[int, np.ndarray] = {}
+        self.direct_estimates: Dict[str, List[np.ndarray]] = defaultdict(list)
         self.fused_estimates: Dict[int, np.ndarray] = {}
         self.neighbors: List[int] = []
 
