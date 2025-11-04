@@ -87,7 +87,7 @@ class MainController:
         self.initialize()
 
         #for loop in self.loop_amount:
-        for loop in range(1): #5ループでのデバッグ用
+        for loop in range(2): #5ループでのデバッグ用
             print(f"***** sim step {loop + 1} *****")
             # 1.直接推定の実行
             for uav_i in self.uavs:
@@ -125,7 +125,7 @@ class MainController:
 
             # 全UAVの状態を k+1 に更新
             for uav in self.uavs:
-                uav.update_state(t=loop, dt=self.dt)
+                uav.update_state(t=loop+1, dt=self.dt)
                 #print(uav.direct_estimates)
 
 
