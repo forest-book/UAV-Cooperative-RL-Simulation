@@ -113,6 +113,8 @@ class MainController:
                         gamma=self.params['GAMMA']
                     ) # 次のステップ(k=loop + 1)の時の相対位置を直接推定
                     print(f"直接推定値: {next_direct}")
+                    # uav_iは直接推定値を持っている
+                    uav_i.direct_estimates[f"chi_{uav_i.id}_{neighbor_id}"].append(next_direct.copy())
                     print("-"*50)
                 print("="*50)
 
