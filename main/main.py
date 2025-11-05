@@ -50,7 +50,7 @@ class MainController:
         target_id = self.params['TARGET_ID']
         for i in range(1,6):
             true_initial_rel_pos: np.ndarray = self.uavs[target_id - 1].true_position - self.uavs[i].true_position
-            self.uavs[i].fused_estimates[target_id] = true_initial_rel_pos.copy()
+            self.uavs[i].fused_estimates[f"pi_{self.uavs[i].id}_{target_id}"].append(true_initial_rel_pos.copy())
             #print(self.uavs[i].fused_estimates)
 
         # 推定式はステップk(自然数)毎に状態を更新するため
@@ -136,14 +136,19 @@ class MainController:
                 print(f"uav_{uav_i.id}")
                 # 重みκを計算
                 kappa_D, kappa_I = self.estimator.calc_estimation_kappa(uav_i.neighbors.copy(), target_j_id) # Listは参照渡しなのでcopyを渡す
-                print(f"kappa_D: {kappa_D}")
-                print(f"kappa_I: {kappa_I}")
+                # print(f"kappa_D: {kappa_D}")
+                # print(f"kappa_I: {kappa_I}")
 
                 # ノイズ付き相対速度 v_ij を取得
                 noisy_v_ij, _, _ = self.get_noisy_measurements(uav_i, target_j_uav)
                 # print(f"uav_{uav_i.id}の速度: {uav_i.true_velocity}")
                 # print(f"target uavの速度: {target_j_uav.true_velocity}")
                 # print(f"相対速度: {noisy_v_ij}")
+
+                # 直接推定値と融合推定値を持ってくる
+                chi_hat_ij_i_k = uav_i.direct_estimates[f"chi_{uav_i.id}_{target_j_id}"] # k=loopの時の直接推定値を持ってくる
+                pi_ij_i_k = uav_i.fused_estimates[f"pi_{uav_i.id}_{target_j_id}"]
+                print(pi_ij_i_k)
 
 
             # 全UAVの状態を k+1 に更新
