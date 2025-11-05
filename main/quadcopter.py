@@ -35,7 +35,7 @@ class UAV:
 
         # 推定値を保持する辞書 {target_id: estimate_vector}
         self.direct_estimates: Dict[str, List[np.ndarray]] = defaultdict(list)
-        self.fused_estimates: Dict[int, np.ndarray] = {}
+        self.fused_estimates: Dict[str, List[np.ndarray]] = defaultdict(list)
         self.neighbors: List[int] = []
 
     def update_state(self, t: int, dt: float, event: Senario = Senario.CONTINUOUS):
