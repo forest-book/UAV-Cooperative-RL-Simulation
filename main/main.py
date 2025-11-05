@@ -128,8 +128,17 @@ class MainController:
 
             # 2.融合推定の実行
             # UAV_i(i=2~6)がUAV_1への融合推定値を算出する
-            # target_j_id = self.params.get('TARGET_ID')
-            # target_j_uav = self.uavs[target_j_id - 1]
+            target_j_id = self.params.get('TARGET_ID')
+            target_j_uav = self.uavs[target_j_id - 1]
+            for uav_i in self.uavs:
+                if uav_i.id == target_j_id:
+                    continue # UAV1 (j=1) は自身への推定を行わない
+                print(f"uav_{uav_i.id}")
+                # 重みκを計算
+                kappa_D, kappa_I = self.estimator.calc_estimation_kappa(uav_i.neighbors.copy(), target_j_id) # Listは参照渡しなのでcopyを渡す
+                print(f"kappa_D: {kappa_D}")
+                print(f"kappa_I: {kappa_I}")
+
 
             # 全UAVの状態を k+1 に更新
             for uav in self.uavs:
