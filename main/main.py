@@ -87,7 +87,7 @@ class MainController:
         self.initialize()
 
         #for loop in self.loop_amount:
-        for loop in range(2): #5ループでのデバッグ用
+        for loop in range(1): #5ループでのデバッグ用
             print(f"***** sim step {loop + 1} *****")
             # 1.直接推定の実行
             for uav_i in self.uavs:
@@ -148,7 +148,23 @@ class MainController:
                 # 直接推定値と融合推定値を持ってくる
                 chi_hat_ij_i_k = uav_i.direct_estimates[f"chi_{uav_i.id}_{target_j_id}"] # k=loopの時の直接推定値を持ってくる
                 pi_ij_i_k = uav_i.fused_estimates[f"pi_{uav_i.id}_{target_j_id}"]
-                print(pi_ij_i_k)
+                #print(pi_ij_i_k)
+
+                # 間接推定値のリストを作成
+                indirect_estimates_list: List = []
+                for r_id in uav_i.neighbors:
+                    if r_id == target_j_id: # r(間接機)はtarget(推定対象)であってはならない
+                        continue
+
+                    uav_r = self.uavs[r_id - 1] #uav_iの隣接機UAVオブジェクト
+                    print("*"*50)
+                    # uav_i(自機)からuav_r(間接機)への直接推定値
+                    chi_hat_ir_i_k = uav_i.direct_estimates[f"chi_{uav_i.id}_{uav_r.id}"]
+                    print(f"chi_hat_{uav_i.id}_{uav_r.id}: {chi_hat_ir_i_k}")
+                    # uav_r(間接機)からtarget(推定対象)への融合推定値
+                    pi_rj_r_k = uav_r.fused_estimates[f"pi_{uav_r.id}_{target_j_id}"]
+                    print(f"pi_{uav_r.id}_{target_j_id}: {pi_rj_r_k}")
+                    
 
 
             # 全UAVの状態を k+1 に更新
