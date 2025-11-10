@@ -91,24 +91,20 @@ class MainController:
             print(f"***** sim step {loop + 1} *****")
             # 1.直接推定の実行
             for uav_i in self.uavs:
-                # if uav_i.id == 2:  # uav_idが2のときのみログを出力
-                #     print(f"uav_{uav_i.id}")
+                print(f"uav_{uav_i.id}")
                 for neighbor_id in uav_i.neighbors:
                     neighbor_uav = self.uavs[neighbor_id - 1]
-                    # if uav_i.id == 2:  # uav_idが2のときのみログを出力
-                    #     print(f"uav_{uav_i.id}_{neighbor_id}")
-                    #     print(f"uav_{uav_i.id}の速度: {uav_i.true_velocity}")
-                    #     print(f"uav_{neighbor_id}の速度: {neighbor_uav.true_velocity}")
+                    print(f"uav_{uav_i.id}_{neighbor_id}")
+                    print(f"uav_{uav_i.id}の速度: {uav_i.true_velocity}")
+                    print(f"uav_{neighbor_id}の速度: {neighbor_uav.true_velocity}")
                     # ノイズ付き観測値を取得
                     noisy_v, noisy_d, noisy_d_dot = self.get_noisy_measurements(uav_i, neighbor_uav)
-                    # if uav_i.id == 2:  # uav_idが2のときのみログを出力
-                    #     print(f"相対速度: {noisy_v}")
-                    #     print(f"距離: {noisy_d}")
-                    #     print(f"距離の変化率: {noisy_d_dot}")
+                    print(f"相対速度: {noisy_v}")
+                    print(f"距離: {noisy_d}")
+                    print(f"距離の変化率: {noisy_d_dot}")
                     # 式(1)の計算
                     chi_hat_ij_i_k = uav_i.direct_estimates[f"chi_{uav_i.id}_{neighbor_id}"] # k=loopの時の直接推定値を持ってくる
-                    # if uav_i.id == 2:  # uav_idが2のときのみログを出力
-                    #     print(f"前ステップの相対位置: {chi_hat_ij_i_k[loop]}")
+                    print(f"前ステップの相対位置: {chi_hat_ij_i_k[loop]}")
                     next_direct = self.estimator.calc_direct_RL_estimate(
                         chi_hat_ij_i_k=chi_hat_ij_i_k[loop],
                         noisy_v=noisy_v,
@@ -117,16 +113,16 @@ class MainController:
                         T=self.dt,
                         gamma=self.params['GAMMA']
                     ) # 次のステップ(k=loop + 1)の時の相対位置を直接推定
-                    # if uav_i.id == 2:  # uav_idが2のときのみログを出力
-                    #     print(f"直接推定値: {next_direct}")
+                    print(f"直接推定値: {next_direct}")
                     # uav_iは直接推定値を持っている
                     uav_i.direct_estimates[f"chi_{uav_i.id}_{neighbor_id}"].append(next_direct.copy())
-                    # if uav_i.id == 2:  # uav_idが2のときのみログを出力
-                    #     print("-"*50)
-                # if uav_i.id == 2:  # uav_idが2のときのみログを出力
-                #     print("="*50)
+                    
+                    print("-"*50)
+                
+                print("="*50)
 
             # 2.融合推定の実行
+            print("融合推定の実行")
             # UAV_i(i=2~6)がUAV_1への融合推定値を算出する
             target_j_id = self.params.get('TARGET_ID')
             target_j_uav: UAV = self.uavs[target_j_id - 1]
@@ -157,14 +153,31 @@ class MainController:
                         continue
 
                     uav_r = self.uavs[r_id - 1] #uav_iの隣接機UAVオブジェクト
-                    print("*"*50)
+                    
                     # uav_i(自機)からuav_r(間接機)への直接推定値
                     chi_hat_ir_i_k = uav_i.direct_estimates[f"chi_{uav_i.id}_{uav_r.id}"]
                     print(f"chi_hat_{uav_i.id}_{uav_r.id}: {chi_hat_ir_i_k}")
                     # uav_r(間接機)からtarget(推定対象)への融合推定値
                     pi_rj_r_k = uav_r.fused_estimates[f"pi_{uav_r.id}_{target_j_id}"]
                     print(f"pi_{uav_r.id}_{target_j_id}: {pi_rj_r_k}")
-                    
+                    # uav_i(自機)からtarget(推定対象)への間接推定値
+                    chi_hat_ij_r_k: np.ndarray = chi_hat_ir_i_k[loop] + pi_rj_r_k[loop]
+                    print(f"間接推定値: {chi_hat_ij_r_k}")
+                    indirect_estimates_list.append(chi_hat_ij_r_k.copy())
+                    print("*"*50)
+                
+                print(f"前ステップの融合推定位置: {pi_ij_i_k[loop]}")
+                next_fused = self.estimator.calc_fused_RL_estimate(
+                    pi_ij_i_k=pi_ij_i_k[loop],
+                    direct_estimate_x_hat=chi_hat_ij_i_k[loop] if kappa_D!=0 else np.zeros(2),
+                    indirect_estimates=indirect_estimates_list,
+                    noisy_v=noisy_v_ij,
+                    T=self.dt,
+                    kappa_D=kappa_D,
+                    kappa_I=kappa_I
+                )
+                print(f"融合推定値: {next_fused}") # k+1の時の値
+                print("#"*50)
 
 
             # 全UAVの状態を k+1 に更新
