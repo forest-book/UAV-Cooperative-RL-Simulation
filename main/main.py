@@ -82,12 +82,21 @@ class MainController:
 
         return true_v_ij, true_d_ij, true_d_dot_ij
 
+    def calc_RL_estimation_error(self, uav_i_id, target_j_id, loop_num):
+        true_rel_pos = self.uavs[target_j_id - 1].true_position - self.uavs[uav_i_id - 1].true_position
+        print(f"真の相対位置: {true_rel_pos}")
+        estimate_rel_pos = self.uavs[uav_i_id - 1].fused_estimates[f"pi_{uav_i_id}_{target_j_id}"]
+        #print(estimate_rel_pos)
+        estimation_error = estimate_rel_pos[loop_num] - true_rel_pos
+        print(f"推定誤差: {estimation_error}")
+        return estimation_error
+
     def run(self):
         """メインループの実行"""
         self.initialize()
 
         #for loop in self.loop_amount:
-        for loop in range(1): #5ループでのデバッグ用
+        for loop in range(15): #5ループでのデバッグ用
             print(f"***** sim step {loop + 1} *****")
             # 1.直接推定の実行
             for uav_i in self.uavs:
@@ -177,13 +186,17 @@ class MainController:
                     kappa_I=kappa_I
                 )
                 print(f"融合推定値: {next_fused}") # k+1の時の値
+                uav_i.fused_estimates[f"pi_{uav_i.id}_{target_j_id}"].append(next_fused.copy())
                 print("#"*50)
 
+            self.calc_RL_estimation_error(5, 1, loop)
 
             # 全UAVの状態を k+1 に更新
             for uav in self.uavs:
                 uav.update_state(t=loop+1, dt=self.dt)
                 #print(uav.direct_estimates)
+            
+            self.calc_RL_estimation_error(5, 1, loop)
 
 
 
