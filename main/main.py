@@ -167,10 +167,10 @@ class MainController:
                     
                     # uav_i(自機)からuav_r(間接機)への直接推定値
                     chi_hat_ir_i_k = uav_i.direct_estimates[f"chi_{uav_i.id}_{uav_r.id}"]
-                    print(f"chi_hat_{uav_i.id}_{uav_r.id}: {chi_hat_ir_i_k}")
+                    # print(f"chi_hat_{uav_i.id}_{uav_r.id}: {chi_hat_ir_i_k}")
                     # uav_r(間接機)からtarget(推定対象)への融合推定値
                     pi_rj_r_k = uav_r.fused_estimates[f"pi_{uav_r.id}_{target_j_id}"]
-                    print(f"pi_{uav_r.id}_{target_j_id}: {pi_rj_r_k}")
+                    # print(f"pi_{uav_r.id}_{target_j_id}: {pi_rj_r_k}")
                     # uav_i(自機)からtarget(推定対象)への間接推定値
                     chi_hat_ij_r_k: np.ndarray = chi_hat_ir_i_k[loop] + pi_rj_r_k[loop]
                     print(f"間接推定値: {chi_hat_ij_r_k}")
@@ -199,6 +199,11 @@ class MainController:
                 #print(uav.direct_estimates)
             
             self.calc_RL_estimation_error(5, 1, loop)
+
+            # 結果をlogに保存する
+            #self.data_logger.logging_timestamp(loop * self.dt)
+            print(f"時間: {loop*self.dt}")
+
 
 
 
