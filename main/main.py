@@ -89,6 +89,8 @@ class MainController:
         #print(estimate_rel_pos)
         estimation_error = estimate_rel_pos[loop_num] - true_rel_pos
         print(f"推定誤差: {estimation_error}")
+        estimation_error_distance = np.linalg.norm(estimation_error)
+        print(f"推定誤差の距離: {estimation_error_distance}")
         return estimation_error
 
     def run(self):
