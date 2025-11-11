@@ -41,7 +41,7 @@ class UAV:
     def update_state(self, t: int, dt: float, event: Senario = Senario.CONTINUOUS):
         """UAVの真の位置と速度を更新する"""
         k=t
-        print(f"uav_{self.id}の今の位置: {self.true_position}")
+        
         # 論文記載の速度式
         if self.id == 1:
             self.true_velocity = np.array([np.cos(k / 3), -5/3 * np.sin(k / 3)])
@@ -62,6 +62,3 @@ class UAV:
 
         # 位置の更新
         self.true_position += self.true_velocity * dt
-        print(f"uav_{self.id}の次の位置: {self.true_position}")
-
-
