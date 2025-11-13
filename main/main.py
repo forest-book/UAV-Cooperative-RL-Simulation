@@ -93,6 +93,10 @@ class MainController:
         estimation_error_distance = np.linalg.norm(estimation_error)
         #print(f"推定誤差の距離: {estimation_error_distance}")
         return estimation_error_distance
+    
+    def show_simulation_progress(self, loop):
+        if(loop * 100 // self.loop_amount) > ((loop - 1) *100 // self.loop_amount):
+            print(f"simulation progress: {loop *100 // self.loop_amount}%")
 
     def run(self):
         """メインループの実行"""
@@ -212,8 +216,7 @@ class MainController:
                 # 推定誤差をロギング
                 self.data_logger.logging_fused_RL_error(uav_id=uav.id, error=error_distance)
 
-            if(loop * 100 // self.loop_amount) > ((loop - 1) *100 // self.loop_amount):
-                print(f"simulation progress: {loop *100 // self.loop_amount}%")
+            self.show_simulation_progress(loop=loop)
 
         # ロギングした推定誤差をcsv出力
         self.data_logger.save_fused_RL_errors_to_csv()
