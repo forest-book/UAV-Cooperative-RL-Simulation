@@ -83,20 +83,21 @@ class MainController:
         return true_v_ij, true_d_ij, true_d_dot_ij
 
     def calc_RL_estimation_error(self, uav_i_id, target_j_id, loop_num):
-        print(f"uav_{uav_i_id}の誤差計算")
+        #print(f"uav_{uav_i_id}の誤差計算")
         true_rel_pos = self.uavs[target_j_id - 1].true_position - self.uavs[uav_i_id - 1].true_position
-        print(f"真の相対位置: {true_rel_pos}")
+        #print(f"真の相対位置: {true_rel_pos}")
         estimate_rel_pos = self.uavs[uav_i_id - 1].fused_estimates[f"pi_{uav_i_id}_{target_j_id}"]
         #print(estimate_rel_pos)
         estimation_error = estimate_rel_pos[loop_num] - true_rel_pos
-        print(f"推定誤差: {estimation_error}")
+        #print(f"推定誤差: {estimation_error}")
         estimation_error_distance = np.linalg.norm(estimation_error)
-        print(f"推定誤差の距離: {estimation_error_distance}")
+        #print(f"推定誤差の距離: {estimation_error_distance}")
         return estimation_error_distance
 
     def run(self):
         """メインループの実行"""
         self.initialize()
+
         for loop in range(self.loop_amount):
         #for loop in range(150): #5ループでのデバッグ用
             print(f"***** sim step {loop + 1} *****")
@@ -133,14 +134,14 @@ class MainController:
                 #print("="*50)
 
             # 2.融合推定の実行
-            print("融合推定の実行")
+            #print("融合推定の実行")
             # UAV_i(i=2~6)がUAV_1への融合推定値を算出する
             target_j_id = self.params.get('TARGET_ID')
             target_j_uav: UAV = self.uavs[target_j_id - 1]
             for uav_i in self.uavs:
                 if uav_i.id == target_j_id:
                     continue # UAV1 (j=1) は自身への推定を行わない
-                print(f"uav_{uav_i.id}")
+                #print(f"uav_{uav_i.id}")
                 # 重みκを計算
                 kappa_D, kappa_I = self.estimator.calc_estimation_kappa(uav_i.neighbors.copy(), target_j_id) # Listは参照渡しなのでcopyを渡す
                 # print(f"kappa_D: {kappa_D}")
@@ -177,7 +178,7 @@ class MainController:
                     indirect_estimates_list.append(chi_hat_ij_r_k.copy())
                     #print("*"*50)
                 
-                print(f"前ステップの融合推定位置: {pi_ij_i_k[loop]}")
+                #print(f"前ステップの融合推定位置: {pi_ij_i_k[loop]}")
                 next_fused = self.estimator.calc_fused_RL_estimate(
                     pi_ij_i_k=pi_ij_i_k[loop],
                     direct_estimate_x_hat=chi_hat_ij_i_k[loop] if kappa_D!=0 else np.zeros(2),
@@ -187,9 +188,9 @@ class MainController:
                     kappa_D=kappa_D,
                     kappa_I=kappa_I
                 )
-                print(f"融合推定値: {next_fused}") # k+1の時の値
+                #print(f"融合推定値: {next_fused}") # k+1の時の値
                 uav_i.fused_estimates[f"pi_{uav_i.id}_{target_j_id}"].append(next_fused.copy())
-                print("#"*50)
+                #print("#"*50)
 
             # 全UAVの状態を k+1 に更新
             uav_positions:list = []
