@@ -97,9 +97,8 @@ class MainController:
     def run(self):
         """メインループの実行"""
         self.initialize()
-
-        #for loop in self.loop_amount:
-        for loop in range(150): #5ループでのデバッグ用
+        for loop in range(self.loop_amount):
+        #for loop in range(150): #5ループでのデバッグ用
             print(f"***** sim step {loop + 1} *****")
             # 1.直接推定の実行
             for uav_i in self.uavs:
@@ -193,12 +192,20 @@ class MainController:
                 print("#"*50)
 
             # 全UAVの状態を k+1 に更新
+            uav_positions:list = []
             for uav in self.uavs:
+                uav_position = uav.true_position.copy()
+                uav_positions.append(uav_position.copy())
                 uav.update_state(t=loop+1, dt=self.dt)
+            print(f"UAV positions before update: {uav_positions}")
 
             # 結果をlogに保存する
             self.data_logger.logging_timestamp(loop * self.dt)
             print(f"時間: {loop*self.dt}")
+
+            # 全UAVの軌道を記録
+            for uav in self.uavs:
+                self.data_logger.logging_uav_trajectories(uav_id=uav.id, uav_position=uav_positions[uav.id-1])
 
             for uav in self.uavs:
                 if uav.id == self.params['TARGET_ID']:
@@ -210,7 +217,9 @@ class MainController:
 
         # ロギングした推定誤差をcsv出力
         self.data_logger.save_fused_RL_errors_to_csv()
-
+        self.data_logger.save_trajectories_data_to_csv()
+        Plotter.plot_trajectories_from_csv()
+        Plotter.plot_errors_from_csv()
 
 
 
