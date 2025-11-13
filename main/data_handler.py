@@ -133,7 +133,7 @@ class Plotter:
         ax.set_title('Consensus-based RL Fusion Estimation', fontsize=16, fontweight='bold')
         ax.set_xlabel('$k$ (sec)', fontsize=14)
         ax.set_ylabel(r'$||\pi_{ij}(k) - \chi_{ij}(k)||$ (m)', fontsize=14)
-        ax.set_ylim(0, 200.0)
+        ax.set_ylim(0, 50.0)
         ax.legend()
         ax.grid(True)
 
