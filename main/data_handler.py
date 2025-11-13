@@ -27,6 +27,80 @@ class DataLogger:
     def logging_fused_RL_error(self, uav_id: int, error: float):
         self.fused_RL_errors[f"uav{uav_id}_fused_error"].append(error)
 
+    def calc_fused_RL_error_statistics(self, transient_time: float = 10.0) -> Dict[int, Dict[str, float]]:
+        """
+        各UAVの融合推定誤差の平均と分散を計算する関数
+        
+        Args:
+            transient_time (float): 過渡状態として除外する時間 [秒]（デフォルト: 10秒）
+            
+        Returns:
+            Dict[int, Dict[str, float]]: UAV IDをキーとし、'mean'と'variance'を含む辞書
+                例: {2: {'mean': 0.123, 'variance': 0.456}, 3: {...}, ...}
+        """
+        statistics = {}
+        
+        # サンプリング周期を推定（最初の2つのタイムスタンプから）
+        if len(self.timestamp) >= 2:
+            dt = self.timestamp[1] - self.timestamp[0]
+            transient_steps = int(transient_time / dt)
+        else:
+            transient_steps = 0
+        
+        # UAV 2~6 の誤差について統計を計算
+        for uav_id in range(2, 7):
+            key = f"uav{uav_id}_fused_error"
+            if key in self.fused_RL_errors:
+                errors = self.fused_RL_errors[key]
+                
+                # 過渡状態を除外し、有効な誤差のみを抽出
+                stable_errors = [e for e in errors[transient_steps:] if e is not None and not np.isnan(e)]
+                
+                if stable_errors:
+                    mean_error = np.mean(stable_errors)
+                    variance = np.var(stable_errors)
+                    statistics[uav_id] = {
+                        'mean': mean_error,
+                        'variance': variance,
+                        'std': np.sqrt(variance),
+                        'num_samples': len(stable_errors)
+                    }
+                else:
+                    statistics[uav_id] = {
+                        'mean': None,
+                        'variance': None,
+                        'std': None,
+                        'num_samples': 0
+                    }
+        
+        return statistics
+
+    def print_fused_RL_error_statistics(self, transient_time: float = 10.0):
+        """
+        融合推定誤差の統計情報をコンソールに表示する関数
+        
+        Args:
+            transient_time (float): 過渡状態として除外する時間 [秒]
+        """
+        statistics = self.calc_fused_RL_error_statistics(transient_time)
+        
+        print("\n" + "="*70)
+        print(f"  融合RL推定誤差の統計 ({transient_time}秒後から安定状態)")
+        print("="*70)
+        print(f"{'UAV Pair':<10} | {'Mean Error (m)':<18} | {'Variance':<15} | {'Std Dev (m)':<15}")
+        print("-" * 70)
+        
+        for uav_id in range(2, 7):
+            if uav_id in statistics:
+                stats = statistics[uav_id]
+                if stats['mean'] is not None:
+                    print(f" {uav_id}→1    | {stats['mean']:<18.6f} | {stats['variance']:<15.6f} | {stats['std']:<15.6f}")
+                else:
+                    print(f" {uav_id}→1    | {'N/A':<18} | {'N/A':<15} | {'N/A':<15}")
+        
+        print("="*70)
+        return statistics
+
     def save_trajectories_data_to_csv(self, filename: str = f'uav_trajectories_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
         """
         複数のUAVの軌道(2D)をcsv保存する関数
@@ -133,7 +207,7 @@ class Plotter:
         ax.set_title('Consensus-based RL Fusion Estimation', fontsize=16, fontweight='bold')
         ax.set_xlabel('$k$ (sec)', fontsize=14)
         ax.set_ylabel(r'$||\pi_{ij}(k) - \chi_{ij}(k)||$ (m)', fontsize=14)
-        ax.set_ylim(0, 200.0)
+        ax.set_ylim(0, 50.0)
         ax.legend()
         ax.grid(True)
 
