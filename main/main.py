@@ -194,7 +194,6 @@ class MainController:
             # 全UAVの状態を k+1 に更新
             for uav in self.uavs:
                 uav.update_state(t=loop+1, dt=self.dt)
-                #print(uav.direct_estimates)
             
             # k+1時点での推定誤差を計算
             self.calc_RL_estimation_error(5, 1, loop+1)
