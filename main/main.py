@@ -100,7 +100,7 @@ class MainController:
 
         for loop in range(self.loop_amount):
         #for loop in range(150): #5ループでのデバッグ用
-            print(f"***** sim step {loop + 1} *****")
+            #print(f"***** sim step {loop + 1} *****")
             # 1.直接推定の実行
             for uav_i in self.uavs:
                 #print(f"uav_{uav_i.id}")
@@ -194,7 +194,7 @@ class MainController:
 
             # 結果をlogに保存する（update_state前の位置を記録）
             self.data_logger.logging_timestamp(loop * self.dt)
-            print(f"時間: {loop*self.dt}")
+            #print(f"時間: {loop*self.dt}")
 
             # 全UAVの軌道を記録（現在の位置 k を記録）
             for uav in self.uavs:
@@ -211,6 +211,9 @@ class MainController:
                 error_distance = self.calc_RL_estimation_error(uav.id, self.params['TARGET_ID'], loop+1)
                 # 推定誤差をロギング
                 self.data_logger.logging_fused_RL_error(uav_id=uav.id, error=error_distance)
+
+            if(loop * 100 // self.loop_amount) > ((loop - 1) *100 // self.loop_amount):
+                print(f"simulation progress: {loop *100 // self.loop_amount}%")
 
         # ロギングした推定誤差をcsv出力
         self.data_logger.save_fused_RL_errors_to_csv()
