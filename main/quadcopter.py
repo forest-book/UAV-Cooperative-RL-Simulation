@@ -40,9 +40,11 @@ class UAV:
 
     def update_state(self, t: int, dt: float, event: Senario = Senario.CONTINUOUS):
         """UAVの真の位置と速度を更新する"""
-        k=t
+        k = t * dt  # 速度式内部のkなので実時間に変換
         
         # 論文記載の速度式
+        # 注: 添え字のkは離散時間ステップだが，速度式内部のkは実時間であるみたい
+        # 速度は [m/s] 単位として解釈し、dt を掛けて位置を更新
         if self.id == 1:
             self.true_velocity = np.array([np.cos(k / 3), -5/3 * np.sin(k / 3)])
         elif self.id == 2:
@@ -56,9 +58,9 @@ class UAV:
         elif self.id == 6:
             self.true_velocity = np.array([-10/3 * np.sin(k/3), 5/3 * np.cos(k/3)])
 
-            # シナリオ2: UAV4の急な機動変更イベント
+        # シナリオ2: UAV4の急な機動変更イベント
         if self.id == 4 and event == Senario.SUDDEN_TURN and 100 <= t < 101:
             self.true_velocity += np.array([5.0, 5.0]) # 外乱を追加
 
-        # 位置の更新
+        # 位置の更新: v [m/s] × dt [s] = 変位 [m]
         self.true_position += self.true_velocity * dt
