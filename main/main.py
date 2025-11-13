@@ -98,7 +98,7 @@ class MainController:
         self.initialize()
 
         #for loop in self.loop_amount:
-        for loop in range(15): #5ループでのデバッグ用
+        for loop in range(5): #5ループでのデバッグ用
             print(f"***** sim step {loop + 1} *****")
             # 1.直接推定の実行
             for uav_i in self.uavs:
@@ -191,14 +191,13 @@ class MainController:
                 uav_i.fused_estimates[f"pi_{uav_i.id}_{target_j_id}"].append(next_fused.copy())
                 print("#"*50)
 
-            self.calc_RL_estimation_error(5, 1, loop)
-
             # 全UAVの状態を k+1 に更新
             for uav in self.uavs:
                 uav.update_state(t=loop+1, dt=self.dt)
                 #print(uav.direct_estimates)
             
-            self.calc_RL_estimation_error(5, 1, loop)
+            # k+1時点での推定誤差を計算
+            self.calc_RL_estimation_error(5, 1, loop+1)
 
             # 結果をlogに保存する
             #self.data_logger.logging_timestamp(loop * self.dt)
