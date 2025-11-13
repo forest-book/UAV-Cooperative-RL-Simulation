@@ -80,7 +80,7 @@ class MainController:
         # 距離変化率ノイズ: [-bound/2, bound/2] の一様乱数
         dist_rate_noise = np.random.uniform(-dist_bound / 2, dist_bound / 2)
 
-        return true_v_ij, true_d_ij, true_d_dot_ij
+        return true_v_ij + vel_noise, true_d_ij + dist_noise, true_d_dot_ij + dist_rate_noise
 
     def calc_RL_estimation_error(self, uav_i_id, target_j_id, loop_num):
         #print(f"uav_{uav_i_id}の誤差計算")
