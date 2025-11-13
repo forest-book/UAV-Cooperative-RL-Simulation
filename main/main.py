@@ -202,7 +202,7 @@ class MainController:
 
             # 全UAVの真の状態を k+1 に更新
             for uav in self.uavs:
-                uav.update_state(t=loop+1, dt=self.dt)
+                uav.update_state(t=loop+1, dt=self.dt, event=self.params['EVENT'])
 
             for uav in self.uavs:
                 if uav.id == self.params['TARGET_ID']:
