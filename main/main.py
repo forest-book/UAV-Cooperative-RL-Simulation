@@ -222,11 +222,6 @@ class MainController:
         Plotter.plot_trajectories_from_csv()
         Plotter.plot_errors_from_csv()
 
-
-
-
-
-
 if __name__ == '__main__':
     simulation_params = {
         'DURATION': 300,
