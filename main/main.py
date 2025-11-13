@@ -192,21 +192,17 @@ class MainController:
                 uav_i.fused_estimates[f"pi_{uav_i.id}_{target_j_id}"].append(next_fused.copy())
                 #print("#"*50)
 
-            # 全UAVの状態を k+1 に更新
-            uav_positions:list = []
-            for uav in self.uavs:
-                uav_position = uav.true_position.copy()
-                uav_positions.append(uav_position.copy())
-                uav.update_state(t=loop+1, dt=self.dt)
-            print(f"UAV positions before update: {uav_positions}")
-
-            # 結果をlogに保存する
+            # 結果をlogに保存する（update_state前の位置を記録）
             self.data_logger.logging_timestamp(loop * self.dt)
             print(f"時間: {loop*self.dt}")
 
-            # 全UAVの軌道を記録
+            # 全UAVの軌道を記録（現在の位置 k を記録）
             for uav in self.uavs:
-                self.data_logger.logging_uav_trajectories(uav_id=uav.id, uav_position=uav_positions[uav.id-1])
+                self.data_logger.logging_uav_trajectories(uav_id=uav.id, uav_position=uav.true_position.copy())
+
+            # 全UAVの真の状態を k+1 に更新
+            for uav in self.uavs:
+                uav.update_state(t=loop+1, dt=self.dt)
 
             for uav in self.uavs:
                 if uav.id == self.params['TARGET_ID']:
