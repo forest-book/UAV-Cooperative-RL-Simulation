@@ -83,6 +83,7 @@ class MainController:
         return true_v_ij, true_d_ij, true_d_dot_ij
 
     def calc_RL_estimation_error(self, uav_i_id, target_j_id, loop_num):
+        print(f"uav_{uav_i_id}の誤差計算")
         true_rel_pos = self.uavs[target_j_id - 1].true_position - self.uavs[uav_i_id - 1].true_position
         print(f"真の相対位置: {true_rel_pos}")
         estimate_rel_pos = self.uavs[uav_i_id - 1].fused_estimates[f"pi_{uav_i_id}_{target_j_id}"]
@@ -91,14 +92,14 @@ class MainController:
         print(f"推定誤差: {estimation_error}")
         estimation_error_distance = np.linalg.norm(estimation_error)
         print(f"推定誤差の距離: {estimation_error_distance}")
-        return estimation_error
+        return estimation_error_distance
 
     def run(self):
         """メインループの実行"""
         self.initialize()
 
         #for loop in self.loop_amount:
-        for loop in range(5): #5ループでのデバッグ用
+        for loop in range(150): #5ループでのデバッグ用
             print(f"***** sim step {loop + 1} *****")
             # 1.直接推定の実行
             for uav_i in self.uavs:
@@ -194,15 +195,21 @@ class MainController:
             # 全UAVの状態を k+1 に更新
             for uav in self.uavs:
                 uav.update_state(t=loop+1, dt=self.dt)
-            
-            # k+1時点での推定誤差を計算
-            self.calc_RL_estimation_error(5, 1, loop+1)
 
             # 結果をlogに保存する
-            #self.data_logger.logging_timestamp(loop * self.dt)
+            self.data_logger.logging_timestamp(loop * self.dt)
             print(f"時間: {loop*self.dt}")
 
+            for uav in self.uavs:
+                if uav.id == self.params['TARGET_ID']:
+                    continue
+                # k+1時点での推定誤差を計算
+                error_distance = self.calc_RL_estimation_error(uav.id, self.params['TARGET_ID'], loop+1)
+                # 推定誤差をロギング
+                self.data_logger.logging_fused_RL_error(uav_id=uav.id, error=error_distance)
 
+        # ロギングした推定誤差をcsv出力
+        self.data_logger.save_fused_RL_errors_to_csv()
 
 
 
