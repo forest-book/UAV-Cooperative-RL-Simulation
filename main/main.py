@@ -100,7 +100,7 @@ class MainController:
                     neighbor_uav = self.uavs[neighbor_id - 1]
                     
                     # ノイズ付き観測値を取得
-                    noisy_v, noisy_d, noisy_d_dot = self.get_noisy_measurements(uav_i, neighbor_uav, False, False, False)
+                    noisy_v, noisy_d, noisy_d_dot = self.get_noisy_measurements(uav_i, neighbor_uav, True, False, False)
                     
                     # 式(1)の計算
                     chi_hat_ij_i_k = uav_i.direct_estimates[f"chi_{uav_i.id}_{neighbor_id}"] # k=loopの時の直接推定値を持ってくる
@@ -129,7 +129,7 @@ class MainController:
                 kappa_D, kappa_I = self.estimator.calc_estimation_kappa(uav_i.neighbors.copy(), target_j_id) # Listは参照渡しなのでcopyを渡す
 
                 # ノイズ付き相対速度 v_ij を取得
-                noisy_v_ij, _, _ = self.get_noisy_measurements(uav_i, target_j_uav, False, False, False)
+                noisy_v_ij, _, _ = self.get_noisy_measurements(uav_i, target_j_uav, True, False, False)
 
                 # 直接推定値と融合推定値を持ってくる
                 chi_hat_ij_i_k = uav_i.direct_estimates[f"chi_{uav_i.id}_{target_j_id}"] # k=loopの時の直接推定値を持ってくる
