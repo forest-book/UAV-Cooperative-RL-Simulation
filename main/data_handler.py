@@ -171,7 +171,7 @@ class DataLogger:
                     if uav_id in statistics:
                         f.write(f"  UAV {uav_id}→1: {statistics[uav_id]['num_samples']} samples\n")
         
-        print(f"Statistics successfully saved to {filename}")
+        print(f"Statistics successfully saved to {dir_path}")
         return dir_path
 
     def save_trajectories_data_to_csv(self, filename: str = f'uav_trajectories_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
