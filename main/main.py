@@ -97,7 +97,6 @@ class MainController:
         for loop in range(self.loop_amount):
             # 1.直接推定の実行
             for uav_i in self.uavs:
-                #print(f"uav_{uav_i.id}")
                 for neighbor_id in uav_i.neighbors:
                     neighbor_uav = self.uavs[neighbor_id - 1]
                     #print(f"uav_{uav_i.id}_{neighbor_id}")
@@ -122,10 +121,6 @@ class MainController:
                     #print(f"直接推定値: {next_direct}")
                     # uav_iは直接推定値を持っている
                     uav_i.direct_estimates[f"chi_{uav_i.id}_{neighbor_id}"].append(next_direct.copy())
-                    
-                    #print("-"*50)
-                
-                #print("="*50)
 
             # 2.融合推定の実行
             #print("融合推定の実行")
