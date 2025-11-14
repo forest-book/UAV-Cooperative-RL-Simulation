@@ -126,7 +126,7 @@ class DataLogger:
             else:
                 filename = f'fused_RL_error_statistics_{timestamp_str}.txt'
         
-        dir_path = "../data/statistics/" + filename
+        dir_path = f"../data/statistics/{format}/{filename}"
         
         if format == 'json':
             # JSON形式で保存
