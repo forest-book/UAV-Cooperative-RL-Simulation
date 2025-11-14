@@ -24,16 +24,12 @@ class MainController:
         initial_positions: dict = self.params['INITIAL_POSITIONS']
         for uav_id, position in initial_positions.items():
             self.uavs.append(UAV(uav_id=uav_id, initial_position=position))
-        # デバッグ用のプリント文
-        # for uav in self.uavs:
-        #     print(uav.id, uav.true_position)
 
         # 各UAV機の隣接機を設定
         neighbors_setting = self.params['NEIGHBORS']
         for uav in self.uavs:
             if uav.id in neighbors_setting:
                 uav.neighbors = neighbors_setting[uav.id]
-            #print(uav.neighbors)
 
         # k=0での直接推定値を設定(直接推定値の初期化)
         # 隣接機に対してのみ初期化
@@ -42,7 +38,6 @@ class MainController:
                 neighbor_uav = self.uavs[neighbor_id - 1]
                 true_initial_rel_pos = neighbor_uav.true_position - uav.true_position
                 uav.direct_estimates[f"chi_{uav.id}_{neighbor_id}"].append(true_initial_rel_pos.copy())
-            #print(uav.direct_estimates)
 
         # k=0での融合推定値を設定(融合推定値の初期化)
         # UAV_i(i=2~6)から見たUAV1の相対位置を融合推定
@@ -50,11 +45,9 @@ class MainController:
         for i in range(1,6):
             true_initial_rel_pos: np.ndarray = self.uavs[target_id - 1].true_position - self.uavs[i].true_position
             self.uavs[i].fused_estimates[f"pi_{self.uavs[i].id}_{target_id}"].append(true_initial_rel_pos.copy())
-            #print(self.uavs[i].fused_estimates)
 
         # 推定式はステップk(自然数)毎に状態を更新するため
         self.loop_amount = int(self.params['DURATION'] / self.params['T'])
-        #print(f"step num: {self.loop_amount}")
 
     def get_noisy_measurements(self, uav_i: UAV, uav_j: UAV) -> Tuple[np.ndarray, float, float]:
         """
@@ -102,8 +95,6 @@ class MainController:
         self.initialize()
 
         for loop in range(self.loop_amount):
-        #for loop in range(150): #5ループでのデバッグ用
-            #print(f"***** sim step {loop + 1} *****")
             # 1.直接推定の実行
             for uav_i in self.uavs:
                 #print(f"uav_{uav_i.id}")
@@ -197,7 +188,6 @@ class MainController:
 
             # 結果をlogに保存する（update_state前の位置を記録）
             self.data_logger.logging_timestamp(loop * self.dt)
-            #print(f"時間: {loop*self.dt}")
 
             # 全UAVの軌道を記録（現在の位置 k を記録）
             for uav in self.uavs:
