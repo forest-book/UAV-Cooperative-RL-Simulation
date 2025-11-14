@@ -224,6 +224,7 @@ class MainController:
         Plotter.plot_trajectories_from_csv()
         Plotter.plot_errors_from_csv()
         self.data_logger.print_fused_RL_error_statistics(transient_time=10.0)
+        self.data_logger.save_fused_RL_error_statistics(transient_time=10.0)
 
 if __name__ == '__main__':
     simulation_params = {
