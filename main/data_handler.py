@@ -1,4 +1,5 @@
 import csv
+import json
 import pandas as pd
 import matplotlib.pyplot as plt
 from collections import defaultdict
@@ -100,6 +101,78 @@ class DataLogger:
         
         print("="*70)
         return statistics
+
+    def save_fused_RL_error_statistics(self, transient_time: float = 10.0, 
+                                       filename: str = None,
+                                       format: str = 'json') -> str:
+        """
+        融合推定誤差の統計情報を外部ファイルに保存する関数
+        
+        Args:
+            transient_time (float): 過渡状態として除外する時間 [秒]
+            filename (str): 保存するファイル名（Noneの場合は自動生成）
+            format (str): 保存形式 ('json' または 'txt')
+            
+        Returns:
+            str: 保存されたファイルのパス
+        """
+        statistics = self.calc_fused_RL_error_statistics(transient_time)
+        
+        # ファイル名が指定されていない場合は自動生成
+        if filename is None:
+            timestamp_str = current_time.strftime(r'%Y-%m-%d-%H-%M-%S')
+            if format == 'json':
+                filename = f'fused_RL_error_statistics_{timestamp_str}.json'
+            else:
+                filename = f'fused_RL_error_statistics_{timestamp_str}.txt'
+        
+        dir_path = f"../data/statistics/{format}/{filename}"
+        
+        if format == 'json':
+            # JSON形式で保存
+            # NumPy型をPython標準型に変換
+            json_data = {
+                'transient_time': transient_time,
+                'timestamp': current_time.strftime(r'%Y-%m-%d %H:%M:%S'),
+                'statistics': {}
+            }
+            
+            for uav_id, stats in statistics.items():
+                json_data['statistics'][f'UAV_{uav_id}_to_1'] = {
+                    'mean': float(stats['mean']) if stats['mean'] is not None else None,
+                    'variance': float(stats['variance']) if stats['variance'] is not None else None,
+                    'std': float(stats['std']) if stats['std'] is not None else None,
+                    'num_samples': int(stats['num_samples'])
+                }
+            
+            with open(dir_path, 'w', encoding='utf-8') as f:
+                json.dump(json_data, f, indent=4, ensure_ascii=False)
+            
+        else:  # txt形式で保存
+            with open(dir_path, 'w', encoding='utf-8') as f:
+                f.write("="*70 + "\n")
+                f.write(f"  融合RL推定誤差の統計 ({transient_time}秒後から安定状態)\n")
+                f.write(f"  生成日時: {current_time.strftime(r'%Y-%m-%d %H:%M:%S')}\n")
+                f.write("="*70 + "\n\n")
+                f.write(f"{'UAV Pair':<10} | {'Mean Error (m)':<18} | {'Variance':<15} | {'Std Dev (m)':<15}\n")
+                f.write("-" * 70 + "\n")
+                
+                for uav_id in range(2, 7):
+                    if uav_id in statistics:
+                        stats = statistics[uav_id]
+                        if stats['mean'] is not None:
+                            f.write(f" {uav_id}→1    | {stats['mean']:<18.6f} | {stats['variance']:<15.6f} | {stats['std']:<15.6f}\n")
+                        else:
+                            f.write(f" {uav_id}→1    | {'N/A':<18} | {'N/A':<15} | {'N/A':<15}\n")
+                
+                f.write("="*70 + "\n")
+                f.write(f"\nサンプル数:\n")
+                for uav_id in range(2, 7):
+                    if uav_id in statistics:
+                        f.write(f"  UAV {uav_id}→1: {statistics[uav_id]['num_samples']} samples\n")
+        
+        print(f"Statistics successfully saved to {dir_path}")
+        return dir_path
 
     def save_trajectories_data_to_csv(self, filename: str = f'uav_trajectories_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
         """
