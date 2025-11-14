@@ -110,37 +110,3 @@ class Estimator:
         #print(f"kappa_D: {kappa_D}")
         #print(f"kappa_I: {kappa_I}")
         return kappa_D, kappa_I
-
-
-
-# --- サンプルデータ定義 ---
-# 現在の相対位置の推定値 (2次元ベクトル)
-# current_estimate = np.array([10.5, -4.8])
-
-# # センサーからの観測値 (ノイズ込み)
-# relative_velocity = np.array([-1.2, 0.3]) # m/s
-# distance = 11.54 # m
-# distance_rate = -1.25 # m/s
-
-# # パラメータ
-# T_sampling = 0.05 # サンプリング周期 50ms (20Hz)
-# gamma_gain = 0.5  # ゲイン
-# est = Estimator()
-# # --- 関数を呼び出して計算 ---
-# # 直接推定推定式のデバッグ用
-# next_estimate = est.calc_direct_RL_estimate(
-#     chi_hat_ij_i_k=current_estimate,
-#     noisy_v=relative_velocity,
-#     noisy_d=distance,
-#     noisy_d_dot=distance_rate,
-#     T=T_sampling,
-#     gamma=gamma_gain
-# )
-
-# # --- 結果の表示 ---
-# print(f"現在の推定値 (x̂_k): {current_estimate}")
-# print(f"次の推定値 (x̂_k+1): {next_estimate}")
-
-# > 出力例:
-# > 現在の推定値 (x̂_k): [10.5 -4.8]
-# > 次の推定値 (x̂_k+1): [10.43285 -4.64325]
