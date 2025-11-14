@@ -216,7 +216,7 @@ class DataLogger:
 
 class Plotter:
     @staticmethod
-    def plot_trajectories_from_csv(filename: str = f'uav_trajectories_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
+    def plot_UAV_trajectories_from_csv(filename: str = f'uav_trajectories_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
         """
         複数のUAVの軌跡を2Dプロットする関数
 
