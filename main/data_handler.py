@@ -174,7 +174,7 @@ class DataLogger:
         print(f"Statistics successfully saved to {dir_path}")
         return dir_path
 
-    def save_trajectories_data_to_csv(self, filename: str = f'uav_trajectories_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
+    def save_UAV_trajectories_data_to_csv(self, filename: str = f'uav_trajectories_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
         """
         複数のUAVの軌道(2D)をcsv保存する関数
 

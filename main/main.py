@@ -209,7 +209,7 @@ class MainController:
 
         # ロギングした推定誤差をcsv出力
         self.data_logger.save_fused_RL_errors_to_csv()
-        self.data_logger.save_trajectories_data_to_csv()
+        self.data_logger.save_UAV_trajectories_data_to_csv()
         Plotter.plot_UAV_trajectories_from_csv()
         Plotter.plot_fused_RL_errors_from_csv()
         self.data_logger.print_fused_RL_error_statistics(transient_time=10.0)
