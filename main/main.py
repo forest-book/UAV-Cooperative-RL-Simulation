@@ -1,6 +1,5 @@
 import numpy as np
-from collections import defaultdict
-from typing import List, Dict, Tuple
+from typing import List, Tuple
 
 from quadcopter import UAV, Senario
 from estimator import Estimator
