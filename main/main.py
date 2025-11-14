@@ -75,15 +75,14 @@ class MainController:
         return true_v_ij + vel_noise, true_d_ij + dist_noise, true_d_dot_ij + dist_rate_noise
 
     def calc_RL_estimation_error(self, uav_i_id, target_j_id, loop_num):
-        #print(f"uav_{uav_i_id}の誤差計算")
+        # 真の相対位置
         true_rel_pos = self.uavs[target_j_id - 1].true_position - self.uavs[uav_i_id - 1].true_position
-        #print(f"真の相対位置: {true_rel_pos}")
+        # 相対位置の融合推定値
         estimate_rel_pos = self.uavs[uav_i_id - 1].fused_estimates[f"pi_{uav_i_id}_{target_j_id}"]
-        #print(estimate_rel_pos)
+        # 推定誤差
         estimation_error = estimate_rel_pos[loop_num] - true_rel_pos
-        #print(f"推定誤差: {estimation_error}")
+        # ノルムをとって推定誤差を距離に直す
         estimation_error_distance = np.linalg.norm(estimation_error)
-        #print(f"推定誤差の距離: {estimation_error_distance}")
         return estimation_error_distance
     
     def show_simulation_progress(self, loop):
