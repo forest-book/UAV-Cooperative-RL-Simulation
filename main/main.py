@@ -146,13 +146,11 @@ class MainController:
                     
                     # uav_i(自機)からuav_r(間接機)への直接推定値
                     chi_hat_ir_i_k = uav_i.direct_estimates[f"chi_{uav_i.id}_{uav_r.id}"]
-                    # print(f"chi_hat_{uav_i.id}_{uav_r.id}: {chi_hat_ir_i_k}")
                     # uav_r(間接機)からtarget(推定対象)への融合推定値
                     pi_rj_r_k = uav_r.fused_estimates[f"pi_{uav_r.id}_{target_j_id}"]
-                    # print(f"pi_{uav_r.id}_{target_j_id}: {pi_rj_r_k}")
                     # uav_i(自機)からtarget(推定対象)への間接推定値
                     chi_hat_ij_r_k: np.ndarray = chi_hat_ir_i_k[loop] + pi_rj_r_k[loop]
-                    #print(f"間接推定値: {chi_hat_ij_r_k}")
+                    # リストに格納
                     indirect_estimates_list.append(chi_hat_ij_r_k.copy())
                 
                 next_fused = self.estimator.calc_fused_RL_estimate(
@@ -163,8 +161,8 @@ class MainController:
                     T=self.dt,
                     kappa_D=kappa_D,
                     kappa_I=kappa_I
-                )
-                #print(f"融合推定値: {next_fused}") # k+1の時の値
+                ) # 次のステップ(k=loop + 1)の時の相対位置を融合推定
+                
                 uav_i.fused_estimates[f"pi_{uav_i.id}_{target_j_id}"].append(next_fused.copy())
 
             # 結果をlogに保存する（update_state前の位置を記録）
