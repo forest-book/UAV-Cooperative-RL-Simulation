@@ -118,7 +118,7 @@ class MainController:
                         T=self.dt,
                         gamma=self.params['GAMMA']
                     ) # 次のステップ(k=loop + 1)の時の相対位置を直接推定
-                    #print(f"直接推定値: {next_direct}")
+                    
                     # uav_iは直接推定値を持っている
                     uav_i.direct_estimates[f"chi_{uav_i.id}_{neighbor_id}"].append(next_direct.copy())
 
@@ -130,11 +130,9 @@ class MainController:
             for uav_i in self.uavs:
                 if uav_i.id == target_j_id:
                     continue # UAV1 (j=1) は自身への推定を行わない
-                #print(f"uav_{uav_i.id}")
+                
                 # 重みκを計算
                 kappa_D, kappa_I = self.estimator.calc_estimation_kappa(uav_i.neighbors.copy(), target_j_id) # Listは参照渡しなのでcopyを渡す
-                # print(f"kappa_D: {kappa_D}")
-                # print(f"kappa_I: {kappa_I}")
 
                 # ノイズ付き相対速度 v_ij を取得
                 noisy_v_ij, _, _ = self.get_noisy_measurements(uav_i, target_j_uav)
@@ -145,7 +143,6 @@ class MainController:
                 # 直接推定値と融合推定値を持ってくる
                 chi_hat_ij_i_k = uav_i.direct_estimates[f"chi_{uav_i.id}_{target_j_id}"] # k=loopの時の直接推定値を持ってくる
                 pi_ij_i_k = uav_i.fused_estimates[f"pi_{uav_i.id}_{target_j_id}"]
-                #print(pi_ij_i_k)
 
                 # 間接推定値のリストを作成
                 indirect_estimates_list: List = []
@@ -165,7 +162,6 @@ class MainController:
                     chi_hat_ij_r_k: np.ndarray = chi_hat_ir_i_k[loop] + pi_rj_r_k[loop]
                     #print(f"間接推定値: {chi_hat_ij_r_k}")
                     indirect_estimates_list.append(chi_hat_ij_r_k.copy())
-                    #print("*"*50)
                 
                 #print(f"前ステップの融合推定位置: {pi_ij_i_k[loop]}")
                 next_fused = self.estimator.calc_fused_RL_estimate(
@@ -179,7 +175,6 @@ class MainController:
                 )
                 #print(f"融合推定値: {next_fused}") # k+1の時の値
                 uav_i.fused_estimates[f"pi_{uav_i.id}_{target_j_id}"].append(next_fused.copy())
-                #print("#"*50)
 
             # 結果をlogに保存する（update_state前の位置を記録）
             self.data_logger.logging_timestamp(loop * self.dt)
