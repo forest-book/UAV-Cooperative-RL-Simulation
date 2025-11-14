@@ -1,7 +1,7 @@
 import numpy as np
 from typing import List, Tuple
 
-from quadcopter import UAV, Senario
+from quadcopter import UAV, Scenario
 from estimator import Estimator
 from data_handler import Plotter, DataLogger
 
@@ -209,9 +209,9 @@ class MainController:
 
         # ロギングした推定誤差をcsv出力
         self.data_logger.save_fused_RL_errors_to_csv()
-        self.data_logger.save_trajectories_data_to_csv()
-        Plotter.plot_trajectories_from_csv()
-        Plotter.plot_errors_from_csv()
+        self.data_logger.save_UAV_trajectories_data_to_csv()
+        Plotter.plot_UAV_trajectories_from_csv()
+        Plotter.plot_fused_RL_errors_from_csv()
         self.data_logger.print_fused_RL_error_statistics(transient_time=10.0)
         self.data_logger.save_fused_RL_error_statistics(transient_time=10.0)
         self.data_logger.save_fused_RL_error_statistics(transient_time=10.0, format='txt')
@@ -222,7 +222,7 @@ if __name__ == '__main__':
         'T': 0.05,  # サンプリング周期 T
         'GAMMA': 0, # ゲイン γ
         'TARGET_ID': 1, # 推定目標
-        'EVENT': Senario.CONTINUOUS, #シナリオ選択
+        'EVENT': Scenario.CONTINUOUS, #シナリオ選択
         'INITIAL_POSITIONS': {
             1: [0, 0], 
             2: [2, -30], 

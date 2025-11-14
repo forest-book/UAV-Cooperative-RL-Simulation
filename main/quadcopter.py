@@ -3,7 +3,7 @@ from typing import List, Dict
 from collections import defaultdict
 from enum import Enum, auto
 
-class Senario(Enum):
+class Scenario(Enum):
     CONTINUOUS = auto()
     SUDDEN_TURN = auto()
 
@@ -38,7 +38,7 @@ class UAV:
         self.fused_estimates: Dict[str, List[np.ndarray]] = defaultdict(list)
         self.neighbors: List[int] = []
 
-    def update_state(self, t: int, dt: float, event: Senario = Senario.CONTINUOUS):
+    def update_state(self, t: int, dt: float, event: Scenario = Scenario.CONTINUOUS):
         """UAVの真の位置と速度を更新する"""
         k = t * dt  # 速度式内部のkなので実時間に変換
         
@@ -59,7 +59,7 @@ class UAV:
             self.true_velocity = np.array([-10/3 * np.sin(k/3), 5/3 * np.cos(k/3)])
 
         # シナリオ2: UAV4の急な機動変更イベント
-        if self.id == 4 and event == Senario.SUDDEN_TURN and 100 <= k < 101:
+        if self.id == 4 and event == Scenario.SUDDEN_TURN and 100 <= k < 101:
             self.true_velocity += np.array([5.0, 5.0]) # 外乱を追加
 
         # 位置の更新: v [m/s] × dt [s] = 変位 [m]

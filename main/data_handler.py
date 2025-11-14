@@ -174,7 +174,7 @@ class DataLogger:
         print(f"Statistics successfully saved to {dir_path}")
         return dir_path
 
-    def save_trajectories_data_to_csv(self, filename: str = f'uav_trajectories_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
+    def save_UAV_trajectories_data_to_csv(self, filename: str = f'uav_trajectories_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
         """
         複数のUAVの軌道(2D)をcsv保存する関数
 
@@ -216,7 +216,7 @@ class DataLogger:
 
 class Plotter:
     @staticmethod
-    def plot_trajectories_from_csv(filename: str = f'uav_trajectories_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
+    def plot_UAV_trajectories_from_csv(filename: str = f'uav_trajectories_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
         """
         複数のUAVの軌跡を2Dプロットする関数
 
@@ -252,7 +252,7 @@ class Plotter:
             print(f"An error occurred while plotting: {e}")
 
     @staticmethod
-    def plot_errors_from_csv(filename: str = f'fused_RL_error_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
+    def plot_fused_RL_errors_from_csv(filename: str = f'fused_RL_error_{current_time.strftime(r'%Y-%m-%d-%H-%M-%S')}.csv'):
         """
         Plot fusion estimation errors from a CSV file.
 
