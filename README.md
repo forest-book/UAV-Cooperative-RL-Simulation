@@ -49,7 +49,7 @@ thesis-UWB-and-Odometry-Based-Cooperative-Relative-Localization/
 
 1. リポジトリのクローン
 ```bash
-git clone https://github.com/yourusername/thesis-UWB-and-Odometry-Based-Cooperative-Relative-Localization.git
+git clone https://github.com/<ACTUAL_USERNAME_OR_ORG>/thesis-UWB-and-Odometry-Based-Cooperative-Relative-Localization.git
 cd thesis-UWB-and-Odometry-Based-Cooperative-Relative-Localization
 ```
 
