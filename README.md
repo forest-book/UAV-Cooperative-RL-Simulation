@@ -195,21 +195,21 @@ python test_error.py
 
 ### 直接相対位置推定（式1）
 
-```
-χ̂ᵢⱼᵢ,ₖ₊₁ = χ̂ᵢⱼᵢ,ₖ + T(νᵢⱼᵢ,ₖ + εₖ) 
-           + γT(νᵢⱼᵢ,ₖ + εₖ)[(dᵢⱼₖ + εᵈₖ)(ḋᵢⱼₖ + εᵈ̇ₖ) - (νᵢⱼᵢ,ₖ + εₖ)ᵀχ̂ᵢⱼᵢ,ₖ]
-```
+$$
+\hat{\chi}_{ij_i,k+1} = \hat{\chi}_{ij_i,k} + T(\nu_{ij_i,k} + \varepsilon_k)
+\quad + \gamma T(\nu_{ij_i,k} + \varepsilon_k)\left[(d_{ij_k} + \varepsilon^d_k)(\dot{d}_{ij_k} + \varepsilon^{\dot{d}}_k) - (\nu_{ij_i,k} + \varepsilon_k)^\top \hat{\chi}_{ij_i,k}\right]
+$$
 
 - UWB測距 `dᵢⱼₖ` と距離変化率 `ḋᵢⱼₖ` を利用
 - 相対速度 `νᵢⱼᵢ,ₖ` による予測とUWB補正の組み合わせ
 
 ### 融合相対位置推定（式5）
 
-```
-πᵢⱼᵢ,ₖ₊₁ = πᵢⱼᵢ,ₖ + T(νᵢⱼᵢ,ₖ + εₖ) 
-          + κᴰᵢⱼ[χ̂ᵢⱼᵢ,ₖ - πᵢⱼᵢ,ₖ] 
-          + Σᵣ∈ℕᵢ\{ⱼ} κᴵᵢᵣ[χ̂ᵢⱼᵣ,ₖ - πᵢⱼᵢ,ₖ]
-```
+$$
+\pi_{ij_i,k+1} = \pi_{ij_i,k} + T(\nu_{ij_i,k} + \varepsilon_k)
+\quad + \kappa^D_{ij}[\hat{\chi}_{ij_i,k} - \pi_{ij_i,k}]
+\quad + \sum_{r \in \mathcal{N}_i \setminus \{j\}} \kappa^I_{ir}[\hat{\chi}_{ij_r,k} - \pi_{ij_i,k}]
+$$
 
 - 直接推定値と間接推定値を重み付き平均
 - コンセンサスベースの手法により，より頑健な推定を実現
