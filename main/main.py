@@ -1,7 +1,7 @@
 import numpy as np
 from typing import List, Tuple
 
-from quadcopter import UAV, Senario
+from quadcopter import UAV, Scenario
 from estimator import Estimator
 from data_handler import Plotter, DataLogger
 
@@ -222,7 +222,7 @@ if __name__ == '__main__':
         'T': 0.05,  # サンプリング周期 T
         'GAMMA': 0, # ゲイン γ
         'TARGET_ID': 1, # 推定目標
-        'EVENT': Senario.CONTINUOUS, #シナリオ選択
+        'EVENT': Scenario.CONTINUOUS, #シナリオ選択
         'INITIAL_POSITIONS': {
             1: [0, 0], 
             2: [2, -30], 
