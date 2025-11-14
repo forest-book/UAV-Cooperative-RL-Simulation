@@ -77,7 +77,7 @@ simulation_params = {
     'T': 0.05,               # サンプリング周期 [秒] (20 Hz)
     'GAMMA': 0.5,            # 推定ゲイン γ
     'TARGET_ID': 1,          # 推定対象のUAV ID
-    'EVENT': Senario.CONTINUOUS,  # シナリオ選択
+    'EVENT': Scenario.CONTINUOUS,  # シナリオ選択
     'INITIAL_POSITIONS': {   # 各UAVの初期位置 [m]
         1: [0, 0], 
         2: [2, -30], 
