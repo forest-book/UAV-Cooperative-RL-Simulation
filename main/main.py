@@ -99,17 +99,13 @@ class MainController:
             for uav_i in self.uavs:
                 for neighbor_id in uav_i.neighbors:
                     neighbor_uav = self.uavs[neighbor_id - 1]
-                    #print(f"uav_{uav_i.id}_{neighbor_id}")
-                    #print(f"uav_{uav_i.id}の速度: {uav_i.true_velocity}")
-                    #print(f"uav_{neighbor_id}の速度: {neighbor_uav.true_velocity}")
+                    
                     # ノイズ付き観測値を取得
                     noisy_v, noisy_d, noisy_d_dot = self.get_noisy_measurements(uav_i, neighbor_uav)
-                    #print(f"相対速度: {noisy_v}")
-                    #print(f"距離: {noisy_d}")
-                    #print(f"距離の変化率: {noisy_d_dot}")
+                    
                     # 式(1)の計算
                     chi_hat_ij_i_k = uav_i.direct_estimates[f"chi_{uav_i.id}_{neighbor_id}"] # k=loopの時の直接推定値を持ってくる
-                    #print(f"前ステップの相対位置: {chi_hat_ij_i_k[loop]}")
+                    
                     next_direct = self.estimator.calc_direct_RL_estimate(
                         chi_hat_ij_i_k=chi_hat_ij_i_k[loop],
                         noisy_v=noisy_v,
@@ -123,7 +119,6 @@ class MainController:
                     uav_i.direct_estimates[f"chi_{uav_i.id}_{neighbor_id}"].append(next_direct.copy())
 
             # 2.融合推定の実行
-            #print("融合推定の実行")
             # UAV_i(i=2~6)がUAV_1への融合推定値を算出する
             target_j_id = self.params.get('TARGET_ID')
             target_j_uav: UAV = self.uavs[target_j_id - 1]
@@ -136,9 +131,6 @@ class MainController:
 
                 # ノイズ付き相対速度 v_ij を取得
                 noisy_v_ij, _, _ = self.get_noisy_measurements(uav_i, target_j_uav)
-                # print(f"uav_{uav_i.id}の速度: {uav_i.true_velocity}")
-                # print(f"target uavの速度: {target_j_uav.true_velocity}")
-                # print(f"相対速度: {noisy_v_ij}")
 
                 # 直接推定値と融合推定値を持ってくる
                 chi_hat_ij_i_k = uav_i.direct_estimates[f"chi_{uav_i.id}_{target_j_id}"] # k=loopの時の直接推定値を持ってくる
@@ -163,7 +155,6 @@ class MainController:
                     #print(f"間接推定値: {chi_hat_ij_r_k}")
                     indirect_estimates_list.append(chi_hat_ij_r_k.copy())
                 
-                #print(f"前ステップの融合推定位置: {pi_ij_i_k[loop]}")
                 next_fused = self.estimator.calc_fused_RL_estimate(
                     pi_ij_i_k=pi_ij_i_k[loop],
                     direct_estimate_x_hat=chi_hat_ij_i_k[loop] if kappa_D!=0 else np.zeros(2),
