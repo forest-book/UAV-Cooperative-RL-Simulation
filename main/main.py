@@ -49,7 +49,7 @@ class MainController:
         # 推定式はステップk(自然数)毎に状態を更新するため
         self.loop_amount = int(self.params['DURATION'] / self.params['T'])
 
-    def get_noisy_measurements(self, uav_i: UAV, uav_j: UAV, add_vel_noise=True, add_dist_noise=True, add_dist_rate_noise=True) -> Tuple[np.ndarray, float, float]:
+    def get_noisy_measurements(self, uav_i: UAV, uav_j: UAV, *, add_vel_noise=True, add_dist_noise=True, add_dist_rate_noise=True) -> Tuple[np.ndarray, float, float]:
         """
         2UAV間の真の状態に基づき、ノイズが付加された測定値を生成する
         シミュレータ上に測距モジュールがあるなら不要となる関数
@@ -100,7 +100,7 @@ class MainController:
                     neighbor_uav = self.uavs[neighbor_id - 1]
                     
                     # ノイズ付き観測値を取得
-                    noisy_v, noisy_d, noisy_d_dot = self.get_noisy_measurements(uav_i, neighbor_uav, True, False, True)
+                    noisy_v, noisy_d, noisy_d_dot = self.get_noisy_measurements(uav_i, neighbor_uav, add_vel_noise=True, add_dist_noise=False, add_dist_rate_noise=True)
                     
                     # 式(1)の計算
                     chi_hat_ij_i_k = uav_i.direct_estimates[f"chi_{uav_i.id}_{neighbor_id}"] # k=loopの時の直接推定値を持ってくる
@@ -129,7 +129,7 @@ class MainController:
                 kappa_D, kappa_I = self.estimator.calc_estimation_kappa(uav_i.neighbors.copy(), target_j_id) # Listは参照渡しなのでcopyを渡す
 
                 # ノイズ付き相対速度 v_ij を取得
-                noisy_v_ij, _, _ = self.get_noisy_measurements(uav_i, target_j_uav, True, False, True)
+                noisy_v_ij, _, _ = self.get_noisy_measurements(uav_i, target_j_uav, add_vel_noise=True, add_dist_noise=False, add_dist_rate_noise=True)
 
                 # 直接推定値と融合推定値を持ってくる
                 chi_hat_ij_i_k = uav_i.direct_estimates[f"chi_{uav_i.id}_{target_j_id}"] # k=loopの時の直接推定値を持ってくる
