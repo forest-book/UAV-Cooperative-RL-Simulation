@@ -124,7 +124,7 @@ class MainController:
             for uav_i in self.uavs:
                 if uav_i.id == target_j_id:
                     continue # UAV1 (j=1) は自身への推定を行わない
-                
+                #ffff
                 # 重みκを計算
                 kappa_D, kappa_I = self.estimator.calc_estimation_kappa(uav_i.neighbors.copy(), target_j_id) # Listは参照渡しなのでcopyを渡す
 
