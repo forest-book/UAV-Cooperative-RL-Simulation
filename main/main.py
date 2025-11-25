@@ -94,13 +94,29 @@ class MainController:
         self.initialize()
 
         for loop in range(self.loop_amount):
+            # 各ループの開始時に全UAVペア間のノイズ付き測定値を事前計算してキャッシュ
+            measurements_cache = {}
+            for uav_i in self.uavs:
+                for uav_j in self.uavs:
+                    if uav_i.id == uav_j.id:
+                        continue
+                    # UAVペアの順序を考慮したキー (i, j) の順序で保存
+                    key = (uav_i.id, uav_j.id)
+                    noisy_v, noisy_d, noisy_d_dot = self.get_noisy_measurements(
+                        uav_i, uav_j, 
+                        add_vel_noise=True, 
+                        add_dist_noise=False, 
+                        add_dist_rate_noise=True
+                    )
+                    measurements_cache[key] = (noisy_v, noisy_d, noisy_d_dot)
+
             # 1.直接推定の実行
             for uav_i in self.uavs:
                 for neighbor_id in uav_i.neighbors:
                     neighbor_uav = self.uavs[neighbor_id - 1]
                     
-                    # ノイズ付き観測値を取得
-                    noisy_v, noisy_d, noisy_d_dot = self.get_noisy_measurements(uav_i, neighbor_uav, add_vel_noise=True, add_dist_noise=False, add_dist_rate_noise=True)
+                    # キャッシュからノイズ付き観測値を取得
+                    noisy_v, noisy_d, noisy_d_dot = measurements_cache[(uav_i.id, neighbor_id)]
                     
                     # 式(1)の計算
                     chi_hat_ij_i_k = uav_i.direct_estimates[f"chi_{uav_i.id}_{neighbor_id}"] # k=loopの時の直接推定値を持ってくる
@@ -128,8 +144,8 @@ class MainController:
                 # 重みκを計算
                 kappa_D, kappa_I = self.estimator.calc_estimation_kappa(uav_i.neighbors.copy(), target_j_id) # Listは参照渡しなのでcopyを渡す
 
-                # ノイズ付き相対速度 v_ij を取得
-                noisy_v_ij, _, _ = self.get_noisy_measurements(uav_i, target_j_uav, add_vel_noise=True, add_dist_noise=False, add_dist_rate_noise=True)
+                # キャッシュからノイズ付き相対速度 v_ij を取得
+                noisy_v_ij, _, _ = measurements_cache[(uav_i.id, target_j_id)]
 
                 # 直接推定値と融合推定値を持ってくる
                 chi_hat_ij_i_k = uav_i.direct_estimates[f"chi_{uav_i.id}_{target_j_id}"] # k=loopの時の直接推定値を持ってくる
@@ -200,7 +216,7 @@ if __name__ == '__main__':
         'T': 0.05,  # サンプリング周期 T
         'GAMMA': 0, # ゲイン γ
         'TARGET_ID': 1, # 推定目標
-        'EVENT': Scenario.CONTINUOUS, #シナリオ選択
+        'EVENT': Scenario.SUDDEN_TURN, #シナリオ選択
         'INITIAL_POSITIONS': {
             1: [0, 0], 
             2: [2, -30], 
