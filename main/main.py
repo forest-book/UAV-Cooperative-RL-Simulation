@@ -53,6 +53,11 @@ class MainController:
         """
         2UAV間の真の状態に基づき、ノイズが付加された測定値を生成する
         シミュレータ上に測距モジュールがあるなら不要となる関数
+        
+        ノイズモデル:
+        - ガウス分布（正規分布）に基づくノイズを使用
+        - 一様分布の±bound/2の範囲を、ガウス分布の3σに相当すると解釈
+        - 99.7%の値が±3σ以内に収まり、時折真値に近い測定も得られる
         """
         # 真の相対値
         true_x_ij = uav_j.true_position - uav_i.true_position
@@ -65,12 +70,18 @@ class MainController:
         delta_bar = self.params['NOISE']['delta_bar']
         dist_bound = self.params['NOISE']['dist_bound']
 
-        # 速度ノイズ: [-δ̄/2, δ̄/2] の一様乱数
-        vel_noise = np.random.uniform(-delta_bar / 2, delta_bar / 2, size=2) if add_vel_noise else np.zeros(2)
-        # 距離ノイズ: [-bound/2, bound/2] の一様乱数
-        dist_noise = np.random.uniform(-dist_bound / 2, dist_bound / 2) if add_dist_noise else 0.0
-        # 距離変化率ノイズ: [-bound/2, bound/2] の一様乱数
-        dist_rate_noise = np.random.uniform(-dist_bound / 2, dist_bound / 2) if add_dist_rate_noise else 0.0
+        # 速度ノイズ: ガウス分布 N(0, σ²)
+        # 元の一様分布の範囲[-δ̄/2, δ̄/2]を3σとして解釈 → σ = δ̄/6
+        sigma_v = delta_bar / 6.0
+        vel_noise = np.random.normal(0, sigma_v, size=2) if add_vel_noise else np.zeros(2)
+        
+        # 距離ノイズ: ガウス分布 N(0, σ²)
+        # 元の一様分布の範囲[-bound/2, bound/2]を3σとして解釈 → σ = bound/6
+        sigma_d = dist_bound / 6.0
+        dist_noise = np.random.normal(0, sigma_d) if add_dist_noise else 0.0
+        
+        # 距離変化率ノイズ: ガウス分布 N(0, σ²)
+        dist_rate_noise = np.random.normal(0, sigma_d) if add_dist_rate_noise else 0.0
 
         return true_v_ij + vel_noise, true_d_ij + dist_noise, true_d_dot_ij + dist_rate_noise
 
@@ -104,7 +115,7 @@ class MainController:
                     key = (uav_i.id, uav_j.id)
                     noisy_v, noisy_d, noisy_d_dot = self.get_noisy_measurements(
                         uav_i, uav_j, 
-                        add_vel_noise=True, 
+                        add_vel_noise=False, 
                         add_dist_noise=False, 
                         add_dist_rate_noise=True
                     )
