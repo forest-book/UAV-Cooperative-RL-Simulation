@@ -100,7 +100,7 @@ class MainController:
                 for uav_j in self.uavs:
                     if uav_i.id == uav_j.id:
                         continue
-                    # UAVペアの順序を考慮したキー (i, j) の順序で保存
+                    # 測定は方向性があるため、キー (i, j) は「uav_i から uav_j への測定」を表す（順序は正規化しない）
                     key = (uav_i.id, uav_j.id)
                     noisy_v, noisy_d, noisy_d_dot = self.get_noisy_measurements(
                         uav_i, uav_j, 
