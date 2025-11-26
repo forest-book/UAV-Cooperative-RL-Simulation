@@ -71,12 +71,12 @@ class MainController:
         dist_bound = self.params['NOISE']['dist_bound']
 
         # 速度ノイズ: ガウス分布 N(0, σ²)
-        # 元の一様分布の範囲[-δ̄/2, δ̄/2]を3σとして解釈 → σ = δ̄/6
+        # 元の一様分布の全幅δ̄を±3σ（6σ）に対応させる → σ = δ̄/6
         sigma_v = delta_bar / 6.0
         vel_noise = np.random.normal(0, sigma_v, size=2) if add_vel_noise else np.zeros(2)
         
         # 距離ノイズ: ガウス分布 N(0, σ²)
-        # 元の一様分布の範囲[-bound/2, bound/2]を3σとして解釈 → σ = bound/6
+        # 元の一様分布の全幅boundを±3σ（6σ）に対応させる → σ = bound/6
         sigma_d = dist_bound / 6.0
         dist_noise = np.random.normal(0, sigma_d) if add_dist_noise else 0.0
         
