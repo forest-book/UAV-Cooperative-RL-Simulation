@@ -16,6 +16,9 @@ class MainController:
 
         self.estimator = Estimator()
         self.data_logger = DataLogger()
+        
+        # ノイズの状態を保持（バイアス成分用）
+        self.noise_states = {}  # {(uav_i_id, uav_j_id): {'vel_bias': array, 'dist_rate_bias': float}}
 
     def initialize(self):
         """システムの初期化"""
@@ -54,10 +57,10 @@ class MainController:
         2UAV間の真の状態に基づき、ノイズが付加された測定値を生成する
         シミュレータ上に測距モジュールがあるなら不要となる関数
         
-        ノイズモデル:
-        - ガウス分布（正規分布）に基づくノイズを使用
-        - 一様分布の±bound/2の範囲を、ガウス分布の3σに相当すると解釈
-        - 99.7%の値が±3σ以内に収まり、時折真値に近い測定も得られる
+        ノイズモデル（バイアス付き）:
+        - 高周波ノイズ: 時間的に独立なガウス分布ノイズ（80%）
+        - 低周波バイアス: ゆっくり変動するランダムウォーク（20%）
+        - バイアスは実際のセンサーのドリフトや較正誤差を模擬
         """
         # 真の相対値
         true_x_ij = uav_j.true_position - uav_i.true_position
@@ -66,23 +69,68 @@ class MainController:
         # 論文式(1)の上あたりの方程式から算出される
         true_d_dot_ij = (true_x_ij @ true_v_ij) / (true_d_ij + 1e-9) # ゼロ除算防止
 
-        # ノイズモデル (4.1節)
+        # ノイズパラメータ
         delta_bar = self.params['NOISE']['delta_bar']
         dist_bound = self.params['NOISE']['dist_bound']
-
-        # 速度ノイズ: ガウス分布 N(0, σ²)
-        # 元の一様分布の全幅δ̄を±3σ（6σ）に対応させる → σ = δ̄/6
-        sigma_v = delta_bar / 6.0
-        vel_noise = np.random.normal(0, sigma_v, size=2) if add_vel_noise else np.zeros(2)
+        bias_strength = self.params['NOISE'].get('bias_strength', 0.2)  # バイアスの強さ（デフォルト20%）
         
-        # 距離ノイズ: ガウス分布 N(0, σ²)
-        # 元の一様分布の全幅boundを±3σ（6σ）に対応させる → σ = bound/6
+        sigma_v = delta_bar / 6.0
         sigma_d = dist_bound / 6.0
+        
+        # UAVペアのキー
+        key = (uav_i.id, uav_j.id)
+        
+        # 初期化（初回のみ）
+        if key not in self.noise_states:
+            self.noise_states[key] = {
+                'vel_bias': np.zeros(2),
+                'dist_rate_bias': 0.0
+            }
+        
+        # 速度ノイズ = 高周波成分 + 低周波バイアス
+        if add_vel_noise:
+            # 高周波成分（80%）: 時間的に独立なガウスノイズ
+            high_freq_v = np.random.normal(0, sigma_v * 0.8, size=2)
+            
+            # 低周波バイアスのランダムウォーク（バイアスの変動は非常に小さい）
+            bias_walk_v = np.random.normal(0, sigma_v * bias_strength * 0.05, size=2)
+            self.noise_states[key]['vel_bias'] += bias_walk_v
+            
+            # バイアスが大きくなりすぎないよう制限
+            max_bias_v = sigma_v * bias_strength * 0.5
+            self.noise_states[key]['vel_bias'] = np.clip(
+                self.noise_states[key]['vel_bias'], 
+                -max_bias_v, 
+                max_bias_v
+            )
+            
+            vel_noise = high_freq_v + self.noise_states[key]['vel_bias']
+        else:
+            vel_noise = np.zeros(2)
+        
+        # 距離ノイズ（UWBは比較的高精度でバイアスは小さい）
         dist_noise = np.random.normal(0, sigma_d) if add_dist_noise else 0.0
         
-        # 距離変化率ノイズ: ガウス分布 N(0, σ²)
-        # 距離ノイズと同じ標準偏差σ_dを使用
-        dist_rate_noise = np.random.normal(0, sigma_d) if add_dist_rate_noise else 0.0
+        # 距離変化率ノイズ（同様にバイアス付き）
+        if add_dist_rate_noise:
+            # 高周波成分（80%）
+            high_freq_d_dot = np.random.normal(0, sigma_d * 0.8)
+            
+            # 低周波バイアスのランダムウォーク
+            bias_walk_d_dot = np.random.normal(0, sigma_d * bias_strength * 0.05)
+            self.noise_states[key]['dist_rate_bias'] += bias_walk_d_dot
+            
+            # バイアス制限
+            max_bias_d = sigma_d * bias_strength * 0.5
+            self.noise_states[key]['dist_rate_bias'] = np.clip(
+                self.noise_states[key]['dist_rate_bias'],
+                -max_bias_d,
+                max_bias_d
+            )
+            
+            dist_rate_noise = high_freq_d_dot + self.noise_states[key]['dist_rate_bias']
+        else:
+            dist_rate_noise = 0.0
 
         return true_v_ij + vel_noise, true_d_ij + dist_noise, true_d_dot_ij + dist_rate_noise
 
@@ -116,7 +164,7 @@ class MainController:
                     key = (uav_i.id, uav_j.id)
                     noisy_v, noisy_d, noisy_d_dot = self.get_noisy_measurements(
                         uav_i, uav_j, 
-                        add_vel_noise=False, 
+                        add_vel_noise=True, 
                         add_dist_noise=False, 
                         add_dist_rate_noise=True
                     )
@@ -226,7 +274,7 @@ if __name__ == '__main__':
     simulation_params = {
         'DURATION': 300,
         'T': 0.05,  # サンプリング周期 T
-        'GAMMA': 0, # ゲイン γ
+        'GAMMA': 0.01, # ゲイン γ
         'TARGET_ID': 1, # 推定目標
         'EVENT': Scenario.SUDDEN_TURN, #シナリオ選択
         'INITIAL_POSITIONS': {
@@ -247,7 +295,8 @@ if __name__ == '__main__':
         },
         'NOISE': { 
             'delta_bar': 0.5,
-            'dist_bound': 0.05
+            'dist_bound': 0.05,
+            'bias_strength': 0.2  # バイアス成分の強さ (0.0-1.0, デフォルト0.2=20%)
         }
     }
 
