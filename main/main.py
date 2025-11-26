@@ -81,6 +81,7 @@ class MainController:
         dist_noise = np.random.normal(0, sigma_d) if add_dist_noise else 0.0
         
         # 距離変化率ノイズ: ガウス分布 N(0, σ²)
+        # 距離ノイズと同じ標準偏差σ_dを使用
         dist_rate_noise = np.random.normal(0, sigma_d) if add_dist_rate_noise else 0.0
 
         return true_v_ij + vel_noise, true_d_ij + dist_noise, true_d_dot_ij + dist_rate_noise
