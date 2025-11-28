@@ -127,8 +127,8 @@ class MainController:
                     key = (uav_i.id, uav_j.id)
                     noisy_v, noisy_d, noisy_d_dot = self.get_noisy_measurements(
                         uav_i, uav_j, 
-                        add_vel_noise=False, 
-                        add_dist_noise=False, 
+                        add_vel_noise=True, 
+                        add_dist_noise=True, 
                         add_dist_rate_noise=True
                     )
                     measurements_cache[key] = (noisy_v, noisy_d, noisy_d_dot)
