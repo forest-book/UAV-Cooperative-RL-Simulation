@@ -17,9 +17,15 @@ class MainController:
         self.estimator = Estimator()
         self.data_logger = DataLogger()
 
+    def get_uav_by_id(self, uav_id: int) -> UAV:
+        """UAV IDからUAVオブジェクトを取得するヘルパーメソッド"""
+        if uav_id < 1 or uav_id > len(self.uavs):
+            raise ValueError(f"Invalid UAV ID: {uav_id}. Must be between 1 and {len(self.uavs)}")
+        return self.uavs[uav_id - 1]
+
     def initialize(self):
         """システムの初期化"""
-        print("ititialize simulation settings...")
+        print("initialize simulation settings...")
         # UAVインスタンス化と初期位置の設定
         initial_positions: dict = self.params['INITIAL_POSITIONS']
         for uav_id, position in initial_positions.items():
@@ -35,16 +41,19 @@ class MainController:
         # 隣接機に対してのみ初期化
         for uav in self.uavs:
             for neighbor_id in uav.neighbors:
-                neighbor_uav = self.uavs[neighbor_id - 1]
+                neighbor_uav = self.get_uav_by_id(neighbor_id)
                 true_initial_rel_pos = neighbor_uav.true_position - uav.true_position
                 uav.direct_estimates[f"chi_{uav.id}_{neighbor_id}"].append(true_initial_rel_pos.copy())
 
         # k=0での融合推定値を設定(融合推定値の初期化)
         # UAV_i(i=2~6)から見たUAV1の相対位置を融合推定
         target_id = self.params['TARGET_ID']
-        for i in range(1,6):
-            true_initial_rel_pos: np.ndarray = self.uavs[target_id - 1].true_position - self.uavs[i].true_position
-            self.uavs[i].fused_estimates[f"pi_{self.uavs[i].id}_{target_id}"].append(true_initial_rel_pos.copy())
+        target_uav = self.get_uav_by_id(target_id)
+        for uav_i in self.uavs:
+            if uav_i.id == target_id:
+                continue  # TARGET自身は自分への推定を行わない
+            true_initial_rel_pos: np.ndarray = target_uav.true_position - uav_i.true_position
+            uav_i.fused_estimates[f"pi_{uav_i.id}_{target_id}"].append(true_initial_rel_pos.copy())
 
         # 推定式はステップk(自然数)毎に状態を更新するため
         self.loop_amount = int(self.params['DURATION'] / self.params['T'])
@@ -88,9 +97,11 @@ class MainController:
 
     def calc_RL_estimation_error(self, uav_i_id, target_j_id, loop_num):
         # 真の相対位置
-        true_rel_pos = self.uavs[target_j_id - 1].true_position - self.uavs[uav_i_id - 1].true_position
+        target_uav = self.get_uav_by_id(target_j_id)
+        uav_i = self.get_uav_by_id(uav_i_id)
+        true_rel_pos = target_uav.true_position - uav_i.true_position
         # 相対位置の融合推定値
-        estimate_rel_pos = self.uavs[uav_i_id - 1].fused_estimates[f"pi_{uav_i_id}_{target_j_id}"]
+        estimate_rel_pos = uav_i.fused_estimates[f"pi_{uav_i_id}_{target_j_id}"]
         # 推定誤差
         estimation_error = estimate_rel_pos[loop_num] - true_rel_pos
         # ノルムをとって推定誤差を距離に直す
@@ -125,7 +136,6 @@ class MainController:
             # 1.直接推定の実行
             for uav_i in self.uavs:
                 for neighbor_id in uav_i.neighbors:
-                    neighbor_uav = self.uavs[neighbor_id - 1]
                     
                     # キャッシュからノイズ付き観測値を取得
                     noisy_v, noisy_d, noisy_d_dot = measurements_cache[(uav_i.id, neighbor_id)]
@@ -148,7 +158,6 @@ class MainController:
             # 2.融合推定の実行
             # UAV_i(i=2~6)がUAV_1への融合推定値を算出する
             target_j_id = self.params.get('TARGET_ID')
-            target_j_uav: UAV = self.uavs[target_j_id - 1]
             for uav_i in self.uavs:
                 if uav_i.id == target_j_id:
                     continue # UAV1 (j=1) は自身への推定を行わない
@@ -169,7 +178,7 @@ class MainController:
                     if r_id == target_j_id: # r(間接機)はtarget(推定対象)であってはならない
                         continue
 
-                    uav_r = self.uavs[r_id - 1] #uav_iの隣接機UAVオブジェクト
+                    uav_r = self.get_uav_by_id(r_id) #uav_iの隣接機UAVオブジェクト
                     
                     # uav_i(自機)からuav_r(間接機)への直接推定値
                     chi_hat_ir_i_k = uav_i.direct_estimates[f"chi_{uav_i.id}_{uav_r.id}"]
@@ -226,7 +235,7 @@ if __name__ == '__main__':
     simulation_params = {
         'DURATION': 300,
         'T': 0.05,  # サンプリング周期 T
-        'GAMMA': 0, # ゲイン γ
+        'GAMMA': 0.01, # ゲイン γ
         'TARGET_ID': 1, # 推定目標
         'EVENT': Scenario.SUDDEN_TURN, #シナリオ選択
         'INITIAL_POSITIONS': {
