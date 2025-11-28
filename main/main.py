@@ -19,6 +19,8 @@ class MainController:
 
     def get_uav_by_id(self, uav_id: int) -> UAV:
         """UAV IDからUAVオブジェクトを取得するヘルパーメソッド"""
+        if uav_id < 1 or uav_id > len(self.uavs):
+            raise ValueError(f"Invalid UAV ID: {uav_id}. Must be between 1 and {len(self.uavs)}")
         return self.uavs[uav_id - 1]
 
     def initialize(self):
