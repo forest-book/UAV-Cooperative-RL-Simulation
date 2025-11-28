@@ -136,7 +136,6 @@ class MainController:
             # 1.直接推定の実行
             for uav_i in self.uavs:
                 for neighbor_id in uav_i.neighbors:
-                    neighbor_uav = self.get_uav_by_id(neighbor_id)
                     
                     # キャッシュからノイズ付き観測値を取得
                     noisy_v, noisy_d, noisy_d_dot = measurements_cache[(uav_i.id, neighbor_id)]
@@ -159,7 +158,6 @@ class MainController:
             # 2.融合推定の実行
             # UAV_i(i=2~6)がUAV_1への融合推定値を算出する
             target_j_id = self.params.get('TARGET_ID')
-            target_j_uav: UAV = self.get_uav_by_id(target_j_id)
             for uav_i in self.uavs:
                 if uav_i.id == target_j_id:
                     continue # UAV1 (j=1) は自身への推定を行わない
