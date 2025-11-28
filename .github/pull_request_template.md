@@ -1,12 +1,31 @@
 <!-- I want to review in Japanese. -->
-## 内容
-xxxの改修をしました。
+## 修正内容
+
+### PR Agent
+
+#### Summary
+<!-- Do not edit -->
+pr_agent:summary
+
+#### Walkthrough
+
+<!-- DO NOT EDIT -->
+pr_agent:walkthrough
 
 ## 動作確認項目
-- [x] xxxxxx
+- [] xxxxxx
 
-## レビュー希望日
-mm/dd (曜日) までにレビューお願いします！
+## セルフレビュー
+
+- [ ] 差分確認
+- [ ] タイポチェック
+- [ ] 不要なコメントアウト
+
+## 修正結果
+
+## TODO
+
+## お知らせ
 
 <!-- for GitHub Copilot review rule -->
 <!--
