@@ -25,7 +25,7 @@ class MainController:
 
     def initialize(self):
         """システムの初期化"""
-        print("ititialize simulation settings...")
+        print("initialize simulation settings...")
         # UAVインスタンス化と初期位置の設定
         initial_positions: dict = self.params['INITIAL_POSITIONS']
         for uav_id, position in initial_positions.items():
