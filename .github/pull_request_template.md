@@ -13,7 +13,7 @@ pr_agent:summary
 pr_agent:walkthrough
 
 ## 動作確認項目
-- [] xxxxxx
+- [ ] xxxxxx
 
 ## セルフレビュー
 
